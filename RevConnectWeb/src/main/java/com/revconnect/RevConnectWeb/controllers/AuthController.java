@@ -44,7 +44,10 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<AuthResponse> login(@RequestBody String email, String password){
+    public ResponseEntity<AuthResponse> login(@RequestBody Map<String, Object> body){
+
+        String email = (String) body.get("email");
+        String password = (String) body.get("password");
 
         return ResponseEntity.ok(authService.login(email,password));
     }
