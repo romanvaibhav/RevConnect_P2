@@ -2,8 +2,7 @@ package com.revconnect.RevConnectWeb.entity;
 
 
 import jakarta.persistence.*;
-import org.springframework.context.annotation.Profile;
-
+import com.revconnect.RevConnectWeb.entity.Profiles;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -33,7 +32,7 @@ public class User {
     private LocalDateTime createdAt;
 
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Profile profile;
+    private Profiles profile;
 
 
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)

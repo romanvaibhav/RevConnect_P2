@@ -32,6 +32,7 @@ public class Profiles {
 
     private String privacy;
 
+    public Profiles(){};
 
     public Profiles(User user, String name, String bio, String profilePicUrl, String location, String websiteUrl, String privacy) {
         this.user = user;
