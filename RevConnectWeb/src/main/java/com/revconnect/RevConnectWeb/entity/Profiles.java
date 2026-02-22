@@ -16,7 +16,7 @@ public class Profiles {
     @JoinColumn(name="user_id")
     private User user;
 
-    @Column(nullable = false)
+//    @Column( = false)
     private String name;
 
     @Column(length = 1000)

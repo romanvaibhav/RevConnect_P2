@@ -46,4 +46,35 @@ public class ProfileService {
         );
 
     }
+
+    public ProfileDTO updateProfile(Long userId, ProfileDTO dto){
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        Profiles profile = profileRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("Profile not found"));
+
+        // update fields (only update if value is provided)
+        if (dto.getName() != null) profile.setName(dto.getName());
+        if (dto.getBio() != null) profile.setBio(dto.getBio());
+        if (dto.getProfilePicUrl() != null) profile.setProfilePicUrl(dto.getProfilePicUrl());
+        if (dto.getLocation() != null) profile.setLocation(dto.getLocation());
+        if (dto.getWebsiteUrl() != null) profile.setWebsiteUrl(dto.getWebsiteUrl());
+        if (dto.getPrivacy() != null) profile.setPrivacy(dto.getPrivacy());
+
+        profile.setUser(user); // keeps @MapsId relationship safe
+
+        Profiles saved = profileRepository.save(profile);
+
+        return new ProfileDTO(
+                saved.getBio(),
+                saved.getName(),
+                saved.getUserId(),
+                saved.getProfilePicUrl(),
+                saved.getLocation(),
+                saved.getWebsiteUrl(),
+                saved.getPrivacy()
+        );
+
+    }
 }

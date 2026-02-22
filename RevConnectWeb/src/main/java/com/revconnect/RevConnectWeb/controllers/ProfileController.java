@@ -21,4 +21,10 @@ public class ProfileController {
 //        ProfileDTO savedProfile=
         return profileService.createProfile(userId,profileDTO);
     }
+
+    @PatchMapping("/updprofile/{userId}")
+    public ProfileDTO updateUserProfile(@PathVariable Long userId, @RequestBody ProfileDTO profileDTO){
+        return profileService.updateProfile(userId,profileDTO);
+
+    }
 }
