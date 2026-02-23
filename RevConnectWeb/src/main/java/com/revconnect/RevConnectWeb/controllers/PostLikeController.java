@@ -13,7 +13,6 @@ public class PostLikeController {
         this.postLikeService = postLikeService;
     }
 
-
     //Post like
     @PostMapping("/{postId}/like/{userId}")
     public String likePost(@PathVariable Long postId,
@@ -27,5 +26,7 @@ public class PostLikeController {
                              @PathVariable Long userId) {
         return postLikeService.unlikePost(postId, userId);
     }
+
+
 
 }

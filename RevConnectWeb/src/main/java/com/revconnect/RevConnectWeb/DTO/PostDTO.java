@@ -1,6 +1,7 @@
 package com.revconnect.RevConnectWeb.DTO;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 public class PostDTO {
 
@@ -9,21 +10,28 @@ public class PostDTO {
     private String content;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+//    private List<String> hashtags;
 
     public PostDTO() {}
 
+
+//    List<String> hashtags
     public PostDTO(Long postId,
                    Long userId,
                    String content,
                    LocalDateTime createdAt,
-                   LocalDateTime updatedAt) {
+                   LocalDateTime updatedAt
+                   ) {
         this.postId = postId;
         this.userId = userId;
         this.content = content;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
+//        this.hashtags = hashtags;
     }
 
+//    public List<String> getHashtags() { return hashtags; }
+//    public void setHashtags(List<String> hashtags) { this.hashtags = hashtags; }
     public Long getPostId() {
         return postId;
     }
