@@ -104,4 +104,11 @@ Make sure you have these installed:
 - Git
 ---
 
-## Project Structure
+## Project Design
+<img width="1920" height="1080" alt="Image" src="https://github.com/user-attachments/assets/d2808fc2-7acf-4206-8e0a-c4e1c5d28fbd" />
+<img width="1920" height="1080" alt="Image" src="https://github.com/user-attachments/assets/b7abd9c4-5078-46a2-86e1-de3733fbef98" />
+<img width="1920" height="1080" alt="Image" src="https://github.com/user-attachments/assets/ef9ff1f9-718f-450d-bcc8-fc84c05d3411" />
+<img width="1920" height="1080" alt="Image" src="https://github.com/user-attachments/assets/855ed9c3-868d-42bd-967b-ae21c7982bd3" />
+
+## Entity relationship diagram
+
