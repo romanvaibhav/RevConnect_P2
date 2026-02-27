@@ -111,4 +111,9 @@ Make sure you have these installed:
 <img width="1920" height="1080" alt="Image" src="https://github.com/user-attachments/assets/855ed9c3-868d-42bd-967b-ae21c7982bd3" />
 
 ## Entity relationship diagram
+<img width="727" height="874" alt="Image" src="https://github.com/user-attachments/assets/6c67bc8b-5235-4483-961b-98dc96d3040a" />
+
+
+##Flow diagram
+![Image](https://github.com/user-attachments/assets/2090a4a4-88e5-43e3-bb91-a167e3fae6ea)
 
