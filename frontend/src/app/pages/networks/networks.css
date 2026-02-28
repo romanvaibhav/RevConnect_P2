@@ -30,7 +30,9 @@
   border-radius: 14px;
   padding: 16px;
   cursor: pointer;
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
 }
 
 .stat-card:hover {
@@ -161,6 +163,11 @@
   color: #374151;
 }
 
+.avatar-lg {
+  width: 76px;
+  height: 76px;
+}
+
 .meta .name {
   margin: 0;
   font-weight: 800;
@@ -282,6 +289,13 @@
   padding: 16px;
   max-height: 60vh;
   overflow: auto;
+}
+
+/* profile modal layout (same UI style) */
+.profile-row {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
 }
 
 @media (max-width: 640px) {

@@ -2,7 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Notificationservice } from '../../cors/notification/notificationservice';
-
+import { faBell } from '@fortawesome/free-solid-svg-icons';
+import { FaIconComponent } from "@fortawesome/angular-fontawesome";
 type NotificationItem = {
   id: number; // notificationId
   message: string;
@@ -19,12 +20,14 @@ type TabKey = 'all' | 'unread' | 'preferences';
 @Component({
   selector: 'app-notifications',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, FaIconComponent],
   templateUrl: './notification.html',
   styleUrl: './notification.css',
 })
 export class Notifications implements OnInit {
   // UI state
+  faBell = faBell;
+
   activeTab: TabKey = 'all';
   loading = false;
   errorMsg = '';

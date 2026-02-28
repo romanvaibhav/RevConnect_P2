@@ -106,4 +106,62 @@ export class Postservice {
       headers,
     });
   }
+
+  //Create shared post 
+  createShare(postId: any, commentaryText?: string): Observable<any> {
+  const token = localStorage.getItem('token');
+  const userId = Number(localStorage.getItem('userId'));
+
+  console.log('Printing userId hehehe', userId);
+
+  const headers = new HttpHeaders({
+    Authorization: `Bearer ${token}`,
+  });
+
+  const body = {
+    originalPostId: postId,
+    sharedByUserId: userId,
+    commentaryText: commentaryText || null
+  };
+
+  return this.httpClient.post(
+    `${Postservice.baseUrl}/shares`,
+    body,
+    { headers }
+  );
+}
+
+
+
+//Share Post
+getSharesByUser(userId: any): Observable<any> {
+  const token = localStorage.getItem('token');
+
+  const headers = new HttpHeaders({
+    Authorization: `Bearer ${token}`,
+  });
+
+  return this.httpClient.get(
+    `${Postservice.baseUrl}/shares/user/${userId}`,
+    { headers }
+  );
+}
+
+
+//Unshare post
+deleteShare(shareId: any): Observable<any> {
+  const token = localStorage.getItem('token');
+
+  const headers = new HttpHeaders({
+    Authorization: `Bearer ${token}`,
+  });
+
+  return this.httpClient.delete(
+    `${Postservice.baseUrl}/shares/${shareId}`,
+    { headers }
+  );
+}
+
+
+  
 }

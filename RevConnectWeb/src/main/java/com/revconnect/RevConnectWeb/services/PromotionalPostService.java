@@ -34,7 +34,9 @@ public class PromotionalPostService {
         BusinessProfile businessProfile = businessProfileRepository.findById(businessProfileId)
                 .orElseThrow(() -> new RuntimeException("BusinessProfile not found"));
 
-        List<Product> taggedProducts = productRepository.findAllById(productIds);
+        List<Product> taggedProducts = (productIds == null || productIds.isEmpty())
+                ? List.of()
+                : productRepository.findAllById(productIds);
         PromotionalPost post = new PromotionalPost(
                 content,                // content
                 imageUrl,               // imageUrl

@@ -2,9 +2,7 @@
   <div class="container">
     <div class="header-row">
       <h2 class="title">Create Post</h2>
-      <button class="btn outline" (click)="clear()" [disabled]="isPosting">
-        Clear
-      </button>
+      <button class="btn outline" (click)="clear()" [disabled]="isPosting">Clear</button>
     </div>
 
     <!-- Card like your feed cards -->
@@ -22,17 +20,39 @@
         </div>
 
         <div class="right">
-          <button
-            class="btn primary"
-            (click)="onCreatePost()"
-            [disabled]="!canPost()"
-          >
+          <button class="btn primary" (click)="onCreatePost()" [disabled]="!canPost()">
             {{ isPosting ? 'Posting...' : 'Post' }}
           </button>
         </div>
       </div>
 
       <div class="editor">
+        <!-- ✅ NEW: Toggle (minimal UI change) -->
+        <!-- Toggle -->
+        <div class="type-row">
+          <button
+            type="button"
+            class="pill"
+            [class.active]="postType === 'normal'"
+            (click)="postType = 'normal'"
+            [disabled]="isPosting"
+          >
+            Normal
+          </button>
+
+          <!-- 🔥 Only show if BUSINESS user -->
+          <button
+            *ngIf="isBusinessUser"
+            type="button"
+            class="pill"
+            [class.active]="postType === 'promo'"
+            (click)="postType = 'promo'"
+            [disabled]="isPosting"
+          >
+            Promotional
+          </button>
+        </div>
+
         <textarea
           class="textarea"
           [(ngModel)]="postText"
@@ -40,9 +60,36 @@
           placeholder="Write something..."
         ></textarea>
 
+        <!-- ✅ NEW: Promotional fields (only show if promo selected) -->
+        <div class="promo-fields" *ngIf="postType === 'promo'">
+          <div class="row">
+            <div class="field">
+              <label class="label">Image URL</label>
+              <input class="input" type="text" [(ngModel)]="imageUrl" placeholder="https://..." />
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="field">
+              <label class="label">CTA Type</label>
+              <select class="input" [(ngModel)]="ctaType">
+                <option value="Learn More">Learn More</option>
+                <option value="Shop Now">Shop Now</option>
+                <option value="Sign Up">Sign Up</option>
+                <option value="Contact Us">Contact Us</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <label class="label">CTA URL</label>
+              <input class="input" type="text" [(ngModel)]="ctaUrl" placeholder="https://..." />
+            </div>
+          </div>
+        </div>
+
         <div class="editor-footer">
           <span class="counter" [class.danger]="remainingChars <= 20">
-            {{ remainingChars }} left
+            <!-- {{ remainingChars }} left -->
           </span>
         </div>
 

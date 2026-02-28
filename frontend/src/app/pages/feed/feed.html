@@ -29,9 +29,7 @@
     <p class="error" *ngIf="errorMsg">{{ errorMsg }}</p>
 
     <!-- Empty state -->
-    <p class="muted" *ngIf="!loading && filteredPosts.length === 0">
-      No posts found.
-    </p>
+    <p class="muted" *ngIf="!loading && filteredPosts.length === 0">No posts found.</p>
 
     <!-- Posts -->
     <article class="post-card" *ngFor="let post of filteredPosts">
@@ -148,9 +146,7 @@
       <!-- Comment list -->
       <div class="comment-list">
         <p class="muted" *ngIf="loadingComments">Loading comments...</p>
-        <p class="muted" *ngIf="!loadingComments && comments.length === 0">
-          No comments yet.
-        </p>
+        <p class="muted" *ngIf="!loadingComments && comments.length === 0">No comments yet.</p>
 
         <div class="comment-item" *ngFor="let c of comments">
           <div class="comment-top">

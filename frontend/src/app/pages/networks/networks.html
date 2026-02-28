@@ -20,6 +20,15 @@
         <p class="stat-sub">People you follow</p>
       </div>
 
+      <!-- same UI card, only visible for BUSINESS -->
+      <div class="stat-card" *ngIf="isBusinessUser()" (click)="openModal('followers')">
+        <div class="stat-top">
+          <p class="stat-label">Followers</p>
+          <span class="pill">{{ followers?.length || 0 }}</span>
+        </div>
+        <p class="stat-sub">People who follow you</p>
+      </div>
+
       <div class="stat-card" (click)="openModal('pending')">
         <div class="stat-top">
           <p class="stat-label">Pending Requests</p>
@@ -43,7 +52,7 @@
           [(ngModel)]="searchTerm"
           (keyup.enter)="onSearch()"
         />
-        <button class="btn primary" (click)="onSearch()">Search</button>
+        <button class="btn primary" (click)="onSearch()" [disabled]="loading">Search</button>
       </div>
 
       <!-- results -->
@@ -53,19 +62,18 @@
             <div class="avatar">
               <img *ngIf="u.profilePicUrl" [src]="u.profilePicUrl" alt="pic" />
               <div class="avatar-fallback" *ngIf="!u.profilePicUrl">
-                {{ (u.name || 'U').charAt(0) }}
+                {{ initials(u.user2Name) }}
               </div>
             </div>
 
             <div class="meta">
-              <p class="name">{{ u.name }}</p>
+              <p class="name">{{ u.user2Name }}</p>
               <p class="sub" *ngIf="u.location">📍 {{ u.location }}</p>
               <p class="sub" *ngIf="u.websiteUrl">{{ u.websiteUrl }}</p>
             </div>
           </div>
 
           <div class="right">
-            <!-- optional: add connect/follow buttons later -->
             <button class="btn outline" (click)="viewProfile(u.userId)">View</button>
           </div>
         </div>
@@ -77,7 +85,7 @@
     </div>
   </div>
 
-  <!-- Modal -->
+  <!-- List Modal -->
   <div class="modal-backdrop" *ngIf="isModalOpen" (click)="closeModal()"></div>
 
   <div class="modal" *ngIf="isModalOpen">
@@ -88,8 +96,10 @@
             modalType === 'connections'
               ? 'Your Connections'
               : modalType === 'following'
-              ? 'Following'
-              : 'Pending Requests'
+                ? 'Following'
+                : modalType === 'followers'
+                  ? 'Followers'
+                  : 'Pending Requests'
           }}
         </h3>
         <button class="icon-btn" (click)="closeModal()">✕</button>
@@ -103,17 +113,21 @@
               <div class="avatar">
                 <img *ngIf="c.profilePicUrl" [src]="c.profilePicUrl" alt="pic" />
                 <div class="avatar-fallback" *ngIf="!c.profilePicUrl">
-                  {{ (c.name || 'U').charAt(0) }}
+                  {{ initials(c.user2Name) }}
                 </div>
               </div>
               <div class="meta">
-                <p class="name">{{ c.name }}</p>
+                <p class="name">{{ c.user2Name }}</p>
                 <p class="sub" *ngIf="c.location">📍 {{ c.location }}</p>
               </div>
             </div>
 
             <div class="right">
-              <button class="btn danger" (click)="removeConnection(c.userId)">
+              <button
+                class="btn danger"
+                (click)="removeConnection(pickUserId(c))"
+                [disabled]="actionLoading"
+              >
                 Remove
               </button>
             </div>
@@ -129,21 +143,51 @@
               <div class="avatar">
                 <img *ngIf="f.profilePicUrl" [src]="f.profilePicUrl" alt="pic" />
                 <div class="avatar-fallback" *ngIf="!f.profilePicUrl">
-                  {{ (f.name || 'U').charAt(0) }}
+                  {{ initials(f.user2Name) }}
                 </div>
               </div>
               <div class="meta">
-                <p class="name">{{ f.name }}</p>
+                <p class="name">{{ f.user2Name }}</p>
                 <p class="sub" *ngIf="f.location">📍 {{ f.location }}</p>
               </div>
             </div>
 
             <div class="right">
-              <button class="btn danger" (click)="unfollow(f.userId)">Unfollow</button>
+              <button
+                class="btn danger"
+                (click)="unfollow(pickUserId(f))"
+                [disabled]="actionLoading"
+              >
+                Unfollow
+              </button>
             </div>
           </div>
 
           <p class="muted" *ngIf="!followings?.length">Not following anyone.</p>
+        </div>
+
+        <!-- Followers (business only) -->
+        <div class="list" *ngIf="modalType === 'followers'">
+          <div class="item" *ngFor="let fo of followers">
+            <div class="left">
+              <div class="avatar">
+                <img *ngIf="fo.profilePicUrl" [src]="fo.profilePicUrl" alt="pic" />
+                <div class="avatar-fallback" *ngIf="!fo.profilePicUrl">
+                  {{ initials(fo.user2Name) }}
+                </div>
+              </div>
+              <div class="meta">
+                <p class="name">{{ fo.user2Name }}</p>
+                <p class="sub" *ngIf="fo.location">📍 {{ fo.location }}</p>
+              </div>
+            </div>
+
+            <div class="right">
+              <button class="btn danger" (click)="removeFollower(pickUserId(fo))">Remove</button>
+            </div>
+          </div>
+
+          <p class="muted" *ngIf="!followers?.length">No followers yet.</p>
         </div>
 
         <!-- Pending -->
@@ -153,27 +197,92 @@
               <div class="avatar">
                 <img *ngIf="r.profilePicUrl" [src]="r.profilePicUrl" alt="pic" />
                 <div class="avatar-fallback" *ngIf="!r.profilePicUrl">
-                  {{ (r.name || 'U').charAt(0) }}
+                  {{ initials(r.user2Name) }}
                 </div>
               </div>
 
               <div class="meta">
-                <p class="name">{{ r.name }}</p>
+                <p class="name">{{ r.user2Name }}</p>
                 <p class="sub" *ngIf="r.location">📍 {{ r.location }}</p>
               </div>
             </div>
 
             <div class="right gap">
-              <button class="btn primary" (click)="acceptRequest(r.requestId)">
+              <button
+                class="btn primary"
+                (click)="acceptRequest(pickRequestId(r))"
+                [disabled]="actionLoading"
+              >
                 Accept
               </button>
-              <button class="btn outline danger-outline" (click)="rejectRequest(r.requestId)">
+              <button
+                class="btn outline danger-outline"
+                (click)="rejectRequest(pickRequestId(r))"
+                [disabled]="actionLoading"
+              >
                 Reject
               </button>
             </div>
           </div>
 
           <p class="muted" *ngIf="!pendingRequests?.length">No pending requests.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Profile View Modal (same modal UI) -->
+  <div class="modal-backdrop" *ngIf="isProfileModalOpen" (click)="closeProfileModal()"></div>
+
+  <div class="modal" *ngIf="isProfileModalOpen">
+    <div class="modal-card">
+      <div class="modal-head">
+        <h3 class="modal-title">Profile</h3>
+        <button class="icon-btn" (click)="closeProfileModal()">✕</button>
+      </div>
+
+      <div class="modal-body">
+        <p class="muted" *ngIf="profileLoading">Loading profile...</p>
+
+        <div *ngIf="!profileLoading && selectedProfile">
+          <div class="profile-row">
+            <div class="avatar avatar-lg">
+              <img
+                *ngIf="selectedProfile.profilePicUrl"
+                [src]="selectedProfile.profilePicUrl"
+                alt="pic"
+              />
+              <div class="avatar-fallback" *ngIf="!selectedProfile.profilePicUrl">
+                {{ initials(selectedProfile.name) }}
+              </div>
+            </div>
+
+            <div class="meta">
+              <p class="name">{{ selectedProfile.name }}</p>
+              <p class="sub" *ngIf="selectedProfile.location">📍 {{ selectedProfile.location }}</p>
+              <p class="sub" *ngIf="selectedProfile.bio">{{ selectedProfile.bio }}</p>
+              <p class="sub" *ngIf="selectedProfile.websiteUrl">{{ selectedProfile.websiteUrl }}</p>
+            </div>
+          </div>
+
+          <div class="right gap" style="margin-top: 14px">
+            <button
+              class="btn primary"
+              (click)="connectTo(selectedProfile.userId)"
+              [disabled]="actionLoading"
+            >
+              Connect
+            </button>
+
+            <!-- show Follow only if selected is BUSINESS -->
+            <button
+              class="btn outline"
+              *ngIf="selectedIsBusiness()"
+              (click)="followBusiness(selectedProfile.userId)"
+            >
+              Follow
+            </button>
+          </div>
         </div>
       </div>
     </div>

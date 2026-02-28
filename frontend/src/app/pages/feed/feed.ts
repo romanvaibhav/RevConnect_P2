@@ -298,6 +298,8 @@ export class Feed implements OnInit {
   // promo CTA
   openCta(url?: string): void {
     if (!url) return;
-    window.open(url, '_blank');
+
+    const formattedUrl = url.startsWith('http') ? url : `https://${url}`;
+    window.open(formattedUrl, '_blank');
   }
 }

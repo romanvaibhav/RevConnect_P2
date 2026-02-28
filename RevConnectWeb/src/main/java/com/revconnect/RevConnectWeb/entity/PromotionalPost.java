@@ -12,8 +12,10 @@ public class PromotionalPost {
     private Long id;
 
     private String content;
+    @Column(nullable = true)
     private String imageUrl;
     private LocalDateTime createdAt;
+    @Column(nullable = true)
     private boolean isPinned;
 
     private String ctaType;  // "Learn More", "Shop Now", etc.

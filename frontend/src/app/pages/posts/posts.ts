@@ -3,6 +3,7 @@ import { Component, OnInit } from '@angular/core';
 import { Postservice } from '../../cors/postService/postservice';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { faThumbsUp, faComment, faThumbsDown } from '@fortawesome/free-solid-svg-icons';
+import { Profileservice } from '../../cors/profileService/profileservice';
 export interface Post {
   postId: number;
   content: string;
@@ -45,10 +46,24 @@ export class Posts implements OnInit {
   newCommentText = '';
   likingPostIds = new Set<number>();
 
-  constructor(private postsService: Postservice) {}
+  constructor(
+    private postsService: Postservice,
+    private profileService: Profileservice,
+  ) {}
 
   ngOnInit(): void {
     this.fetchPosts();
+  }
+
+  getUserProfile(): void {
+    this.profileService.getUserProfile().subscribe({
+      next: (data) => {
+        
+      },
+      error: (err) => {
+        console.error('Failed to load profile', err);
+      },
+    });
   }
 
   fetchPosts(): void {

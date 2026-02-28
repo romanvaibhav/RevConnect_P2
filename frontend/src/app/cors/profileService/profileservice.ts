@@ -22,6 +22,15 @@ export class Profileservice {
     return this.httpClient.get(`${Postservice.baseUrl}/user/userProfile/${userId}`, { headers });
   }
 
+  getUserProfileById(userId: number): Observable<any> {
+    const token = localStorage.getItem('token');
+    const headers = new HttpHeaders({
+      Authorization: `Bearer ${token}`,
+    });
+
+    return this.httpClient.get(`${Postservice.baseUrl}/user/userProfile/${userId}`, { headers });
+  }
+
   getUserPosts(): Observable<any> {
     const token = localStorage.getItem('token');
     const userId = localStorage.getItem('userId');
@@ -32,6 +41,7 @@ export class Profileservice {
     return this.httpClient.get(`${Postservice.baseUrl}/post/userposts/${userId}`, { headers });
   }
 
+  //create user profile
   createProfile(profile: any): Observable<any> {
     const token = localStorage.getItem('token');
     const userId = localStorage.getItem('userId');

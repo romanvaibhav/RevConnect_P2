@@ -22,17 +22,19 @@ export class Networkservice {
     return this.httpClient.get(`${Networkservice.baseUrl}/connections/list/${userId}`, { headers });
   }
 
-  sendConnectionRequest(targetUserId: number): Observable<any> {
+  //Send connection request to other user
+  sendConnectionRequest(receiverId: number): Observable<any> {
     const token = localStorage.getItem('token');
     const userId = Number(localStorage.getItem('userId'));
+
     const headers = new HttpHeaders({
       Authorization: `Bearer ${token}`,
     });
 
     return this.httpClient.post(
-      `${Networkservice.baseUrl}/connections/request`,
-      { targetUserId },
-      { headers },
+      `${Networkservice.baseUrl}/connections/request/${userId}/${receiverId}`,
+      {}, // ✅ body (empty)
+      { headers }, // ✅ headers go here
     );
   }
 
@@ -46,6 +48,19 @@ export class Networkservice {
     });
 
     return this.httpClient.get(`${Networkservice.baseUrl}/api/follow/following/${userId}`, {
+      headers,
+    });
+  }
+
+  //Get the followers also
+  getFollowersByUser(): Observable<any> {
+    const token = localStorage.getItem('token');
+    const userId = Number(localStorage.getItem('userId'));
+    const headers = new HttpHeaders({
+      Authorization: `Bearer ${token}`,
+    });
+
+    return this.httpClient.get(`${Networkservice.baseUrl}/api/follow/followers/${userId}`, {
       headers,
     });
   }
@@ -104,8 +119,23 @@ export class Networkservice {
       Authorization: `Bearer ${token}`,
     });
 
+    return this.httpClient.delete(
+      `${Networkservice.baseUrl}/connections/${userId}/${connectionId}`,
+      { headers },
+    );
+  }
+
+  // /api/follow/unfollow/{followerId}/{followingId}
+  unfolllowUser(followingId: number): Observable<any> {
+    const token = localStorage.getItem('token');
+    const followerId = Number(localStorage.getItem('userId'));
+
+    const headers = new HttpHeaders({
+      Authorization: `Bearer ${token}`,
+    });
+
     return this.httpClient.post(
-      `${Networkservice.baseUrl}/connections/${userId}/${connectionId}}`,
+      `${Networkservice.baseUrl}/api/follow/unfollow/${followingId}/${followerId}`,
       {},
       { headers },
     );

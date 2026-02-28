@@ -22,10 +22,11 @@ public class PromotionalPostController {
     public ResponseEntity<PromotionalPost> createPost(
             @RequestParam Long businessProfileId,
             @RequestParam String content,
-            @RequestParam String imageUrl,
-            @RequestParam List<Long> productIds,
+            @RequestParam (required = false, defaultValue = "") String imageUrl,
+            @RequestParam (required = false) List<Long> productIds,
             @RequestParam String ctaType,  // "Learn More", "Shop Now", etc.
             @RequestParam String ctaUrl) {
+        if (productIds == null) productIds = List.of();
 
         PromotionalPost post = postService.createPost(businessProfileId, content, imageUrl, productIds,ctaType,ctaUrl);
         return new ResponseEntity<>(post, HttpStatus.CREATED);

@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Networkservice } from '../../cors/networkService/networkservice';
 import { Profileservice } from '../../cors/profileService/profileservice';
 
-type ModalType = 'connections' | 'following' | 'pending';
+type ModalType = 'connections' | 'following' | 'followers' | 'pending';
 
 @Component({
   selector: 'app-networks',
@@ -22,6 +22,7 @@ export class Networks implements OnInit {
   // data
   connections: any[] = [];
   followings: any[] = [];
+  followers: any[] = [];
   pendingRequests: any[] = [];
   searchResults: any[] = [];
 
@@ -31,20 +32,34 @@ export class Networks implements OnInit {
   searchTerm = '';
   loading = false;
 
+  // profile modal
+  isProfileModalOpen = false;
+  selectedProfile: any = null;
+  profileLoading = false;
+
+  // action loading (disable buttons)
+  actionLoading = false;
+
+  currentUserId = Number(localStorage.getItem('userId')) || 0;
+  currentAccountType = (localStorage.getItem('accountType') || '').toUpperCase(); // BUSINESS / CREATOR / etc.
+
   ngOnInit(): void {
     this.getUserConnections();
     this.getAllFollowing();
     this.getAllPendingReq();
-    // NOTE: removed auto-searchAllUsers() from ngOnInit,
-    // because user will search from UI
+
+    // only business user sees followers
+    if (this.isBusinessUser()) {
+      this.getAllFollowers();
+    }
   }
 
   // ---------- API Calls ----------
   getUserConnections(): void {
     this.networkService.getAllConnection().subscribe({
       next: (data: any) => {
+        console.log('Connections data:', data);
         this.connections = Array.isArray(data) ? data : [];
-        console.log('User Connections Data:', data);
       },
       error: (err: any) => console.error('Failed to load connections', err),
     });
@@ -53,10 +68,22 @@ export class Networks implements OnInit {
   getAllFollowing(): void {
     this.networkService.getFollowingByUser().subscribe({
       next: (data: any) => {
+        console.log('following data:', data);
+
         this.followings = Array.isArray(data) ? data : [];
-        console.log('User Following Data:', data);
       },
       error: (err: any) => console.error('Failed to load following', err),
+    });
+  }
+
+  getAllFollowers(): void {
+    this.networkService.getFollowersByUser().subscribe({
+      next: (data: any) => {
+        console.log('followers data:', data);
+
+        this.followers = Array.isArray(data) ? data : [];
+      },
+      error: (err: any) => console.error('Failed to load followers', err),
     });
   }
 
@@ -64,7 +91,6 @@ export class Networks implements OnInit {
     this.networkService.getAllPendingRequests().subscribe({
       next: (data: any) => {
         this.pendingRequests = Array.isArray(data) ? data : [];
-        console.log('User Pending Requests Data:', data);
       },
       error: (err: any) => console.error('Failed to load pending requests', err),
     });
@@ -90,7 +116,6 @@ export class Networks implements OnInit {
       next: (data: any) => {
         this.searchResults = Array.isArray(data) ? data : [];
         this.loading = false;
-        console.log('Search Results:', data);
       },
       error: (err: any) => {
         console.error('Failed to search users', err);
@@ -104,68 +129,155 @@ export class Networks implements OnInit {
     this.searchResults = [];
   }
 
-  // ---------- Actions (Connect / Following / Pending) ----------
-  // NOTE: Replace these calls with your actual service methods.
-  // If your endpoints are different, paste your networkservice methods,
-  // I will map these perfectly.
+  // ---------- View Profile Modal ----------
+  viewProfile(userId: number) {
+    if (!userId) return;
+
+    this.isProfileModalOpen = true;
+    this.profileLoading = true;
+    this.selectedProfile = null;
+
+    // ✅ IMPORTANT:
+    // Your "getUserProfile()" service fetches profile using localStorage userId (current user).
+    // To view other user, you must have getUserProfileById(userId).
+    // If you already have it, this will work.
+    // If not, use the method given below at the end.
+
+    const getter: any = (this.profileService as any).getUserProfileById
+      ? (this.profileService as any).getUserProfileById(userId)
+      : null;
+
+    if (!getter) {
+      console.error(
+        'Profileservice.getUserProfileById(userId) not found. Add it in Profileservice.',
+      );
+      this.profileLoading = false;
+      this.isProfileModalOpen = false;
+      return;
+    }
+
+    getter.subscribe({
+      next: (profile: any) => {
+        this.selectedProfile = profile;
+        this.profileLoading = false;
+      },
+      error: (err: any) => {
+        console.error('Failed to load profile', err);
+        this.profileLoading = false;
+      },
+    });
+  }
+
+  closeProfileModal() {
+    this.isProfileModalOpen = false;
+    this.selectedProfile = null;
+    this.profileLoading = false;
+  }
+
+  // ---------- Actions ----------
+  connectTo(userId: number) {
+    if (!userId || this.actionLoading) return;
+
+    this.actionLoading = true;
+    this.networkService.sendConnectionRequest(userId).subscribe({
+      next: () => {
+        this.actionLoading = false;
+        this.getAllPendingReq();
+      },
+      error: (err: any) => {
+        console.error('sendConnectionRequest failed', err);
+        this.actionLoading = false;
+      },
+    });
+  }
 
   removeConnection(otherUserId: number) {
-    console.log('Remove connection:', otherUserId);
+    if (!otherUserId || this.actionLoading) return;
 
-    // Example (if you have): this.networkService.removeConnection(otherUserId)
-    // this.networkService.removeConnection(otherUserId).subscribe({
-    //   next: () => this.getUserConnections(),
-    //   error: (err: any) => console.error('removeConnection failed', err),
-    // });
-
-    // Temporary UI remove:
-    this.connections = this.connections.filter((c) => this.pickUserId(c) !== otherUserId);
+    this.actionLoading = true;
+    this.networkService.deleteConnectionRequest(otherUserId).subscribe({
+      next: () => {
+        this.actionLoading = false;
+        this.getUserConnections();
+      },
+      error: (err: any) => {
+        console.error('deleteConnectionRequest failed', err);
+        this.actionLoading = false;
+      },
+    });
   }
 
   unfollow(otherUserId: number) {
-    console.log('Unfollow:', otherUserId);
+    if (!otherUserId || this.actionLoading) return;
 
-    // Example:
-    // this.networkService.unfollow(otherUserId).subscribe({
-    //   next: () => this.getAllFollowing(),
-    //   error: (err: any) => console.error('unfollow failed', err),
-    // });
-
-    this.followings = this.followings.filter((f) => this.pickUserId(f) !== otherUserId);
+    this.actionLoading = true;
+    this.networkService.unfolllowUser(otherUserId).subscribe({
+      next: () => {
+        this.actionLoading = false;
+        this.getAllFollowing();
+      },
+      error: (err: any) => {
+        console.error('unfollow failed', err);
+        this.actionLoading = false;
+      },
+    });
   }
 
   acceptRequest(requestId: number) {
-    console.log('Accept request:', requestId);
+    if (!requestId || this.actionLoading) return;
 
-    // Example:
-    // this.networkService.acceptRequest(requestId).subscribe({
-    //   next: () => this.getAllPendingReq(),
-    //   error: (err: any) => console.error('acceptRequest failed', err),
-    // });
-
-    this.pendingRequests = this.pendingRequests.filter((r) => this.pickRequestId(r) !== requestId);
+    this.actionLoading = true;
+    this.networkService.acceptConnectionRequest(requestId).subscribe({
+      next: () => {
+        this.actionLoading = false;
+        this.getAllPendingReq();
+        this.getUserConnections();
+      },
+      error: (err: any) => {
+        console.error('acceptConnectionRequest failed', err);
+        this.actionLoading = false;
+      },
+    });
   }
 
   rejectRequest(requestId: number) {
-    console.log('Reject request:', requestId);
+    if (!requestId || this.actionLoading) return;
 
-    // Example:
-    // this.networkService.rejectRequest(requestId).subscribe({
-    //   next: () => this.getAllPendingReq(),
-    //   error: (err: any) => console.error('rejectRequest failed', err),
-    // });
-
-    this.pendingRequests = this.pendingRequests.filter((r) => this.pickRequestId(r) !== requestId);
+    this.actionLoading = true;
+    this.networkService.rejectConnectionRequest(requestId).subscribe({
+      next: () => {
+        this.actionLoading = false;
+        this.getAllPendingReq();
+      },
+      error: (err: any) => {
+        console.error('rejectConnectionRequest failed', err);
+        this.actionLoading = false;
+      },
+    });
   }
 
-  viewProfile(userId: number) {
-    console.log('View profile:', userId);
-    // add routing if you want:
-    // this.router.navigate(['/profile', userId]);
+  // Followers remove (endpoint not shared)
+  removeFollower(followerUserId: number) {
+    // Plug your API here when you have endpoint.
+    // Temporary UI update:
+    this.followers = this.followers.filter((f) => this.pickUserId(f) !== followerUserId);
   }
 
-  // ---------- Helpers to support different backend keys ----------
-  // Your backend might return userId, id, targetUserId, etc.
+  // Follow option only for BUSINESS profiles (endpoint not provided)
+  followBusiness(userId: number) {
+    console.warn('Follow endpoint not provided. userId:', userId);
+  }
+
+  // ---------- helpers ----------
+  isBusinessUser(): boolean {
+    return this.currentAccountType === 'BUSINESS';
+  }
+
+  selectedIsBusiness(): boolean {
+    const t = (this.selectedProfile?.accountType || '').toUpperCase();
+    return t === 'BUSINESS';
+  }
+
   pickUserId(obj: any): number {
     return (
       obj?.userId ?? obj?.id ?? obj?.targetUserId ?? obj?.otherUserId ?? obj?.profileUserId ?? 0
@@ -180,6 +292,6 @@ export class Networks implements OnInit {
     if (!name) return 'U';
     const parts = name.trim().split(' ').filter(Boolean);
     if (parts.length === 1) return parts[0].charAt(0).toUpperCase();
-    return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
+    return parts[0].charAt(0).toUpperCase() + parts[parts.length - 1].charAt(0).toUpperCase();
   }
 }

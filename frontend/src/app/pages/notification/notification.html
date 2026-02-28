@@ -22,20 +22,20 @@
         <span class="badge" *ngIf="unreadCount > 0">{{ unreadCount }}</span>
       </button>
 
-      <button
+      <!-- <button
         class="tab"
         [class.active]="activeTab === 'preferences'"
         (click)="setTab('preferences')"
       >
         Preferences
-      </button>
+      </button> -->
     </div>
 
     <!-- Errors -->
     <div class="error" *ngIf="errorMsg">{{ errorMsg }}</div>
 
     <!-- Preferences -->
-    <div class="card" *ngIf="activeTab === 'preferences'">
+    <!-- <div class="card" *ngIf="activeTab === 'preferences'">
       <h3 class="card-title">Notification Preferences</h3>
       <p class="muted">Choose how you want to receive updates.</p>
 
@@ -57,7 +57,7 @@
       </div>
 
       <button class="btn" (click)="savePreferences()">Save Preferences</button>
-    </div>
+    </div> -->
 
     <!-- List -->
     <div class="list" *ngIf="activeTab !== 'preferences'">
@@ -69,8 +69,8 @@
 
       <div class="row" *ngFor="let n of filteredNotifications">
         <div class="left">
-          <div class="icon">{{ getIcon(n.type) }}</div>
-
+          <div class="icon"><fa-icon [icon]="faBell" class="bell-icon"></fa-icon></div>
+          <div class="notification-container"></div>
           <div class="meta">
             <div class="msg" [class.unread]="!n.read">
               {{ n.message }}
