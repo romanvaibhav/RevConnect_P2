@@ -3,6 +3,8 @@ package com.revconnect.RevConnectWeb.controllers;
 import com.revconnect.RevConnectWeb.DTO.ProfileDTO;
 import com.revconnect.RevConnectWeb.entity.Profiles;
 import com.revconnect.RevConnectWeb.services.ProfileService;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -30,8 +32,13 @@ public class ProfileController {
     }
 
     @GetMapping("userProfile/{userId}")
-    public  ProfileDTO getProfile(@PathVariable Long userId){
-        return profileService.getProfile(userId);
+    public ResponseEntity<ProfileDTO> getProfile(@PathVariable Long userId) {
+        ProfileDTO profile = profileService.getProfile(userId);
+        if (profile == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+
+        return ResponseEntity.ok(profile);
     }
 
     @GetMapping("/searchUser")

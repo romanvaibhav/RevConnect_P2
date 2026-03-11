@@ -96,10 +96,14 @@
 
           <span class="count">{{ post.likeCount }}</span>
         </div>
+        <div class="css">
+          <button class="action" (click)="openComments(post)">
+            <fa-icon [icon]="faComment"></fa-icon> Comment
+          </button>
+          <button class="action"><fa-icon [icon]="faBookmark"></fa-icon> Save</button>
 
-        <button class="action" (click)="openComments(post)">
-          <fa-icon [icon]="faComment"></fa-icon> Comment
-        </button>
+          <button class="action"><fa-icon [icon]="faShare"></fa-icon> share</button>
+        </div>
       </div>
     </article>
 
@@ -173,4 +177,7 @@
       </div>
     </div>
   </div>
+
+
+  
 </section>

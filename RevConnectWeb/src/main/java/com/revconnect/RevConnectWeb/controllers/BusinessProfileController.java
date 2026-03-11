@@ -1,4 +1,4 @@
-package com.revconnect.RevConnectWeb.controller;
+package com.revconnect.RevConnectWeb.controllers;
 
 import com.revconnect.RevConnectWeb.DTO.BusinessProfileDTO;
 import com.revconnect.RevConnectWeb.entity.BusinessProfile;

@@ -57,6 +57,7 @@
         <!-- (click)="openComments(post)" -->
         <button class="action"><fa-icon [icon]="faComment"></fa-icon> Comment</button>
       </div>
+      <button (click)="openProfileModal()">Open mdl</button>
     </article>
 
     <!-- bottom padding so last post isn't hidden behind comments drawer -->
@@ -103,4 +104,73 @@
       </div> -->
     </div>
   </aside>
+
+  <div class="modal-backdrop" *ngIf="profileModalOpen"></div>
+
+  <div class="modal" *ngIf="profileModalOpen">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2>Create Your Profile</h2>
+      </div>
+
+      <div class="modal-body">
+        <div class="form-group">
+          <label>Name</label>
+          <input type="text" [(ngModel)]="profileForm.name" placeholder="Enter your name" />
+        </div>
+
+        <div class="form-group">
+          <label>Bio</label>
+          <textarea
+            [(ngModel)]="profileForm.bio"
+            placeholder="Tell something about yourself"
+          ></textarea>
+        </div>
+
+        <div class="liner">
+          <div class="form-group">
+            <label>Profile Picture URL</label>
+            <input
+              type="text"
+              [(ngModel)]="profileForm.profilePicUrl"
+              placeholder="Enter image URL"
+            />
+          </div>
+
+          <div class="form-group" id="privacy">
+            <label>Location</label>
+            <input
+              type="text"
+              [(ngModel)]="profileForm.location"
+              placeholder="Enter your location"
+            />
+          </div>
+        </div>
+
+        <div class="liner">
+          <div class="form-group">
+            <label>Website URL</label>
+            <input
+              type="text"
+              [(ngModel)]="profileForm.websiteUrl"
+              placeholder="Enter website URL"
+            />
+          </div>
+
+          <div class="form-group" id="privacy">
+            <label>Privacy</label>
+
+            <select [(ngModel)]="profileForm.privacy">
+              <option value="PUBLIC">Public</option>
+              <option value="PRIVATE">Private</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="save-btn" (click)="saveProfile()">Save Profile</button>
+      </div>
+    </div>
+  </div>
 </div>

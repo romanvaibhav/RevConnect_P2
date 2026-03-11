@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class ProfileService {
@@ -82,11 +83,19 @@ public class ProfileService {
 
 
     public ProfileDTO getProfile(Long userId){
-        User user= userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+//        User user= userRepository.findById(userId)
+//                .orElseThrow(() -> new RuntimeException("User not found"));
 
-        Profiles profile = profileRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("Profile not found"));
+//        Profiles profile = profileRepository.findById(userId)
+//                .orElseThrow(() -> new RuntimeException("Profile not found"));
+
+        Optional<Profiles> profileOpt = profileRepository.findById(userId);
+
+        if(profileOpt.isEmpty()){
+            return null;
+        }
+
+        Profiles profile = profileOpt.get();
 
         return new ProfileDTO(
                 profile.getBio(),

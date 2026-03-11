@@ -4,7 +4,13 @@ import { FormsModule } from '@angular/forms';
 import { forkJoin } from 'rxjs';
 
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
-import { faThumbsUp, faThumbsDown, faComment } from '@fortawesome/free-solid-svg-icons';
+import {
+  faThumbsUp,
+  faThumbsDown,
+  faComment,
+  faShare,
+  faBookmark,
+} from '@fortawesome/free-solid-svg-icons';
 
 import { Postservice } from '../../cors/postService/postservice';
 
@@ -41,6 +47,8 @@ export class Feed implements OnInit {
   faThumbsUp = faThumbsUp;
   faThumbsDown = faThumbsDown;
   faComment = faComment;
+  faShare = faShare;
+  faBookmark = faBookmark;
 
   // posts
   posts: FeedPost[] = [];
@@ -96,6 +104,8 @@ export class Feed implements OnInit {
         this.posts = [...normalPosts, ...promoPosts].sort(
           (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
         );
+        console.log(normal);
+        console.log(promo);
 
         this.applyHashtagFilter();
         this.loading = false;
@@ -174,9 +184,6 @@ export class Feed implements OnInit {
       post.likeCount = (post.likeCount ?? 0) + 1;
     }
 
-    // TODO: call like API here
-    // this.postService.likePost(post.postId).subscribe({...})
-
     setTimeout(() => this.likingPostIds.delete(post.postId), 250);
   }
 
@@ -189,9 +196,6 @@ export class Feed implements OnInit {
       post.liked = false;
       post.likeCount = Math.max(0, (post.likeCount ?? 0) - 1);
     }
-
-    // TODO: call unlike API here
-    // this.postService.unlikePost(post.postId).subscribe({...})
 
     setTimeout(() => this.likingPostIds.delete(post.postId), 250);
   }
@@ -218,7 +222,6 @@ export class Feed implements OnInit {
     this.loadingComments = true;
     this.commentError = '';
 
-    // ✅ Update this endpoint in service if needed
     this.postService.getCommentsByPost(postId).subscribe({
       next: (data: any) => {
         this.comments = Array.isArray(data) ? data : [];
@@ -242,10 +245,9 @@ export class Feed implements OnInit {
 
     this.postingComment = true;
     this.commentError = '';
+    const userI = localStorage.getItem('user');
+    const body = { content: text, userId: userI };
 
-    const body = { content: text };
-
-    // ✅ Update this endpoint in service if needed
     this.postService.addComment(body).subscribe({
       next: (saved: any) => {
         this.postingComment = false;

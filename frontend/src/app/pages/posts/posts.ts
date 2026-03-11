@@ -4,6 +4,7 @@ import { Postservice } from '../../cors/postService/postservice';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { faThumbsUp, faComment, faThumbsDown } from '@fortawesome/free-solid-svg-icons';
 import { Profileservice } from '../../cors/profileService/profileservice';
+import { FormsModule } from '@angular/forms';
 export interface Post {
   postId: number;
   content: string;
@@ -15,6 +16,14 @@ export interface Post {
   liked?: boolean;
 }
 
+export interface ProfileModel {
+  name: string;
+  bio: string;
+  profilePicUrl: string;
+  location: string;
+  websiteUrl: string;
+  privacy: string;
+}
 export interface Comment {
   id: number;
   postId: number;
@@ -25,7 +34,7 @@ export interface Comment {
 
 @Component({
   selector: 'app-posts',
-  imports: [CommonModule, FontAwesomeModule],
+  imports: [CommonModule, FontAwesomeModule, FormsModule],
   templateUrl: './posts.html',
   styleUrl: './posts.css',
 })
@@ -53,14 +62,20 @@ export class Posts implements OnInit {
 
   ngOnInit(): void {
     this.fetchPosts();
+    this.getUserProfile();
   }
 
+  userProfile: any;
   getUserProfile(): void {
     this.profileService.getUserProfile().subscribe({
       next: (data) => {
-        
+        this.userProfile = data;
       },
       error: (err) => {
+        // console.log(err);
+        // if (err.status == 404) {
+        this.openProfileModal();
+        // }
         console.error('Failed to load profile', err);
       },
     });
@@ -77,6 +92,63 @@ export class Posts implements OnInit {
       error: (err) => {
         console.error('Failed to load posts', err);
         this.loadingPosts = false;
+      },
+    });
+  }
+
+  savingProfile = false;
+  profileError = '';
+
+  profileModalOpen = false;
+
+  profileForm: ProfileModel = {
+    name: '',
+    bio: '',
+    profilePicUrl: '',
+    location: '',
+    websiteUrl: '',
+    privacy: 'PUBLIC',
+  };
+
+  openProfileModal(): void {
+    this.profileModalOpen = true;
+  }
+
+  closeProfileModal(): void {
+    this.profileModalOpen = false;
+  }
+
+  //Save Profile
+  saveProfile(): void {
+    this.profileError = '';
+
+    if (!this.profileForm.name.trim()) {
+      this.profileError = 'Name is required';
+      return;
+    }
+
+    const payload = {
+      name: this.profileForm.name,
+      bio: this.profileForm.bio,
+      profilePicUrl: this.profileForm.profilePicUrl,
+      location: this.profileForm.location,
+      websiteUrl: this.profileForm.websiteUrl,
+      privacy: this.profileForm.privacy,
+    };
+
+    this.savingProfile = true;
+
+    this.profileService.createProfile(payload).subscribe({
+      next: (res: any) => {
+        console.log('Profile saved:', res);
+        this.savingProfile = false;
+        this.closeProfileModal();
+        // this.getUserProfile();
+      },
+      error: (err) => {
+        this.savingProfile = false;
+        console.error('Failed to save profile', err);
+        this.profileError = 'Failed to save profile';
       },
     });
   }

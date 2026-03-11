@@ -15,6 +15,7 @@ export class Profileservice {
   getUserProfile(): Observable<any> {
     const token = localStorage.getItem('token');
     const userId = localStorage.getItem('userId');
+    console.log(token);
     const headers = new HttpHeaders({
       Authorization: `Bearer ${token}`,
     });
