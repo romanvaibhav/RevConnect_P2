@@ -1,0 +1,9 @@
+<nav class="navbar">
+  <div class="nav-brand">
+    <span class="logo">RevConnect</span>
+  </div>
+  <button *ngIf="isLoggedIn" class="logout-btn" (click)="logout()">
+    <fa-icon [icon]="faRightFromBracket"></fa-icon>
+    <span>Logout</span>
+  </button>
+</nav>

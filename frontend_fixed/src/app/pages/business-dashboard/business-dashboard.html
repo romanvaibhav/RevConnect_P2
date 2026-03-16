@@ -1,0 +1,250 @@
+<div class="page">
+  <div class="topbar">
+    <div>
+      <h2 class="page-title"><fa-icon [icon]="faBuilding"></fa-icon> Business Dashboard</h2>
+      <p class="page-sub" *ngIf="businessProfile">{{ businessProfile.category }} &bull; {{ businessProfile.contactEmail }}</p>
+      <p class="page-sub muted" *ngIf="!businessProfile && !loadingProfile">No business profile found.</p>
+    </div>
+  </div>
+
+  <div class="content-area">
+    <!-- Tabs -->
+    <div class="tabs">
+      <button class="tab" [class.active]="activeTab==='overview'" (click)="setTab('overview')">
+        <fa-icon [icon]="faChartBar"></fa-icon> Overview
+      </button>
+      <button class="tab" [class.active]="activeTab==='products'" (click)="setTab('products')">
+        <fa-icon [icon]="faBoxOpen"></fa-icon> Products
+      </button>
+      <button class="tab" [class.active]="activeTab==='posts'" (click)="setTab('posts')">
+        <fa-icon [icon]="faBullhorn"></fa-icon> Promo Posts
+      </button>
+      <button class="tab" [class.active]="activeTab==='hours'" (click)="setTab('hours')">
+        <fa-icon [icon]="faClock"></fa-icon> Hours
+      </button>
+      <button class="tab" [class.active]="activeTab==='links'" (click)="setTab('links')">
+        <fa-icon [icon]="faLink"></fa-icon> Links
+      </button>
+    </div>
+
+    <!-- OVERVIEW -->
+    <div *ngIf="activeTab==='overview'" class="tab-body">
+      <div class="stats-grid">
+        <div class="stat-card" (click)="setTab('products')">
+          <fa-icon [icon]="faBoxOpen" class="sc-icon"></fa-icon>
+          <p class="stat-num">{{ products.length }}</p><p class="stat-label">Products</p>
+        </div>
+        <div class="stat-card" (click)="setTab('posts')">
+          <fa-icon [icon]="faBullhorn" class="sc-icon"></fa-icon>
+          <p class="stat-num">{{ promoPosts.length }}</p><p class="stat-label">Promo Posts</p>
+        </div>
+        <div class="stat-card" (click)="setTab('hours')">
+          <fa-icon [icon]="faClock" class="sc-icon"></fa-icon>
+          <p class="stat-num">{{ hours.length }}</p><p class="stat-label">Hours Set</p>
+        </div>
+        <div class="stat-card" (click)="setTab('links')">
+          <fa-icon [icon]="faLink" class="sc-icon"></fa-icon>
+          <p class="stat-num">{{ links.length }}</p><p class="stat-label">Links</p>
+        </div>
+      </div>
+      <div class="info-card" *ngIf="businessProfile">
+        <h3><fa-icon [icon]="faBuilding"></fa-icon> Profile Info</h3>
+        <div class="info-row"><span class="info-label">Category</span><span>{{ businessProfile.category }}</span></div>
+        <div class="info-row"><span class="info-label">Email</span><span>{{ businessProfile.contactEmail }}</span></div>
+        <div class="info-row"><span class="info-label">Address</span><span>{{ businessProfile.address||'—' }}</span></div>
+        <div class="info-row"><span class="info-label">Bio</span><span>{{ businessProfile.detailedBio||'—' }}</span></div>
+      </div>
+    </div>
+
+    <!-- PRODUCTS -->
+    <div *ngIf="activeTab==='products'" class="tab-body">
+      <div class="section-head">
+        <h3><fa-icon [icon]="faBoxOpen"></fa-icon> Products ({{ products.length }})</h3>
+        <button class="btn primary" (click)="openProductForm()"><fa-icon [icon]="faPlus"></fa-icon> Add Product</button>
+      </div>
+      <p class="muted" *ngIf="loadingProducts">Loading products...</p>
+      <p class="muted" *ngIf="!loadingProducts && products.length===0">No products yet.</p>
+      <div class="card-grid">
+        <div class="item-card" *ngFor="let p of products">
+          <div class="item-head">
+            <span class="item-name">{{ p.name }}</span>
+            <div class="item-actions">
+              <button class="btn outline sm" (click)="openProductForm(p)"><fa-icon [icon]="faPenToSquare"></fa-icon></button>
+              <button class="btn danger sm" (click)="deleteProduct(p.id)"><fa-icon [icon]="faTrash"></fa-icon></button>
+            </div>
+          </div>
+          <p class="item-desc">{{ p.description }}</p>
+          <div class="item-meta">
+            <span class="price">&#8377;{{ p.price }}</span>
+            <span class="category-pill">{{ p.category }}</span>
+          </div>
+          <img *ngIf="p.imageUrl" [src]="p.imageUrl" class="item-img" alt="product" />
+        </div>
+      </div>
+    </div>
+
+    <!-- PROMO POSTS -->
+    <div *ngIf="activeTab==='posts'" class="tab-body">
+      <div class="section-head">
+        <h3><fa-icon [icon]="faBullhorn"></fa-icon> Promo Posts ({{ promoPosts.length }})</h3>
+        <button class="btn primary" (click)="openPostForm()"><fa-icon [icon]="faPlus"></fa-icon> Create Post</button>
+      </div>
+      <p class="muted" *ngIf="loadingPosts">Loading posts...</p>
+      <p class="muted" *ngIf="!loadingPosts && promoPosts.length===0">No promotional posts yet.</p>
+
+      <div class="analytics-panel" *ngIf="analyticsPostId !== null">
+        <div class="analytics-header">
+          <h4><fa-icon [icon]="faChartLine"></fa-icon> Analytics — Post #{{ analyticsPostId }}</h4>
+          <button class="btn outline sm" (click)="analyticsPostId=null; analytics=null"><fa-icon [icon]="faXmark"></fa-icon></button>
+        </div>
+        <p class="muted" *ngIf="loadingAnalytics">Loading analytics...</p>
+        <p class="error-bar" *ngIf="analyticsError">{{ analyticsError }}</p>
+        <div *ngIf="analytics && !loadingAnalytics" class="analytics-grid">
+          <div class="a-stat"><fa-icon [icon]="faChartBar" class="a-icon"></fa-icon><span class="a-num">{{ analytics.likeCount??0 }}</span><span class="a-label">Likes</span></div>
+          <div class="a-stat"><fa-icon [icon]="faChartBar" class="a-icon"></fa-icon><span class="a-num">{{ analytics.commentCount??0 }}</span><span class="a-label">Comments</span></div>
+          <div class="a-stat"><fa-icon [icon]="faChartBar" class="a-icon"></fa-icon><span class="a-num">{{ analytics.shareCount??0 }}</span><span class="a-label">Shares</span></div>
+          <div class="a-stat"><fa-icon [icon]="faChartLine" class="a-icon"></fa-icon><span class="a-num">{{ analytics.uniqueViewerCount??0 }}</span><span class="a-label">Engagement</span></div>
+        </div>
+      </div>
+
+      <div class="item-card" *ngFor="let p of promoPosts">
+        <div class="item-head">
+          <span class="item-name">
+            <fa-icon [icon]="faThumbTack" *ngIf="p.pinned||p.isPinned" class="pin-icon"></fa-icon>
+            {{ p.content | slice:0:70 }}...
+          </span>
+          <div class="item-actions">
+            <button class="btn outline sm" (click)="viewAnalytics(p.id)" title="Analytics"><fa-icon [icon]="faChartLine"></fa-icon></button>
+            <button class="btn outline sm" (click)="togglePin(p)" title="{{ (p.pinned||p.isPinned)?'Unpin':'Pin' }}"><fa-icon [icon]="faThumbTack"></fa-icon></button>
+            <button class="btn outline sm" (click)="openPostForm(p)"><fa-icon [icon]="faPenToSquare"></fa-icon></button>
+            <button class="btn danger sm" (click)="deletePromoPost(p.id)"><fa-icon [icon]="faTrash"></fa-icon></button>
+          </div>
+        </div>
+        <img *ngIf="p.imageUrl" [src]="p.imageUrl" class="item-img" alt="promo" />
+        <div class="item-meta">
+          <span class="category-pill">{{ p.ctaType }}</span>
+          <a [href]="p.ctaUrl" target="_blank" rel="noopener" class="link">{{ p.ctaUrl }}</a>
+          <span class="date-label">{{ p.createdAt | date:'mediumDate' }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- BUSINESS HOURS -->
+    <div *ngIf="activeTab==='hours'" class="tab-body">
+      <div class="section-head"><h3><fa-icon [icon]="faClock"></fa-icon> Business Hours</h3></div>
+      <div class="card-form">
+        <h4>Set / Update Hours</h4>
+        <div class="form-row">
+          <div class="field"><label>Day</label>
+            <select [(ngModel)]="hoursForm.dayOfWeek">
+              <option *ngFor="let d of dayNames; let i=index" [value]="i">{{ d }}</option>
+            </select>
+          </div>
+          <div class="field"><label>Open Time</label><input type="time" [(ngModel)]="hoursForm.openTime" /></div>
+          <div class="field"><label>Close Time</label><input type="time" [(ngModel)]="hoursForm.closeTime" /></div>
+          <div class="field checkbox-field">
+            <label class="checkbox-label"><input type="checkbox" [(ngModel)]="hoursForm.isClosed" /> Closed</label>
+          </div>
+        </div>
+        <p class="error-bar" *ngIf="hoursError">{{ hoursError }}</p>
+        <p class="success-bar" *ngIf="hoursSuccess">{{ hoursSuccess }}</p>
+        <button class="btn primary" (click)="saveHours()" [disabled]="savingHours">
+          {{ savingHours ? 'Saving...' : 'Save Hours' }}
+        </button>
+      </div>
+      <p class="muted" *ngIf="loadingHours">Loading hours...</p>
+      <div class="hours-list">
+        <div class="hours-row" *ngFor="let h of hours">
+          <span class="day-name">{{ getDayName(h.dayOfWeek) }}</span>
+          <span *ngIf="!h.isClosed">{{ h.openTime }} – {{ h.closeTime }}</span>
+          <span class="closed-tag" *ngIf="h.isClosed">Closed</span>
+          <button class="btn danger sm" (click)="deleteHours(h.hoursId)"><fa-icon [icon]="faXmark"></fa-icon></button>
+        </div>
+        <p class="muted" *ngIf="!loadingHours && hours.length===0">No hours set yet.</p>
+      </div>
+    </div>
+
+    <!-- LINKS -->
+    <div *ngIf="activeTab==='links'" class="tab-body">
+      <div class="section-head"><h3><fa-icon [icon]="faLink"></fa-icon> External Links</h3></div>
+      <div class="card-form">
+        <div class="form-row">
+          <div class="field"><label>Label</label><input type="text" [(ngModel)]="linkForm.label" placeholder="e.g. Twitter" /></div>
+          <div class="field"><label>URL</label><input type="text" [(ngModel)]="linkForm.url" placeholder="https://..." /></div>
+          <div class="field"><label>Type</label>
+            <select [(ngModel)]="linkForm.linkType">
+              <option>Social Media</option><option>Portfolio</option><option>Website</option><option>Other</option>
+            </select>
+          </div>
+        </div>
+        <p class="error-bar" *ngIf="linkError">{{ linkError }}</p>
+        <p class="success-bar" *ngIf="linkSuccess">{{ linkSuccess }}</p>
+        <button class="btn primary" (click)="addLink()" [disabled]="savingLink">
+          <fa-icon [icon]="faPlus"></fa-icon> {{ savingLink ? 'Adding...' : 'Add Link' }}
+        </button>
+      </div>
+      <p class="muted" *ngIf="loadingLinks">Loading links...</p>
+      <div class="links-list">
+        <div class="link-row" *ngFor="let l of links">
+          <fa-icon [icon]="faLink" class="link-icon"></fa-icon>
+          <span class="link-label">{{ l.label||l.linkType }}</span>
+          <a [href]="l.url" target="_blank" class="link">{{ l.url }}</a>
+          <span class="category-pill">{{ l.linkType }}</span>
+          <button class="btn danger sm" (click)="deleteLink(l.linkID)"><fa-icon [icon]="faTrash"></fa-icon></button>
+        </div>
+        <p class="muted" *ngIf="!loadingLinks && links.length===0">No links added yet.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PRODUCT MODAL -->
+<div class="modal-backdrop" *ngIf="showProductForm" (click)="closeProductForm()"></div>
+<div class="modal" *ngIf="showProductForm">
+  <div class="modal-card" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3><fa-icon [icon]="editingProductId ? faPenToSquare : faPlus"></fa-icon> {{ editingProductId ? 'Edit' : 'Add' }} Product</h3>
+      <button class="close-btn" (click)="closeProductForm()"><fa-icon [icon]="faXmark"></fa-icon></button>
+    </div>
+    <div class="modal-body-form">
+      <div class="field"><label>Name *</label><input type="text" [(ngModel)]="productForm.name" /></div>
+      <div class="field"><label>Description</label><textarea [(ngModel)]="productForm.description" rows="3"></textarea></div>
+      <div class="field"><label>Price</label><input type="number" [(ngModel)]="productForm.price" /></div>
+      <div class="field"><label>Category</label><input type="text" [(ngModel)]="productForm.category" /></div>
+      <div class="field"><label>Image URL</label><input type="text" [(ngModel)]="productForm.imageUrl" /></div>
+      <p class="error-bar" *ngIf="productError">{{ productError }}</p>
+      <p class="success-bar" *ngIf="productSuccess">{{ productSuccess }}</p>
+      <div class="modal-footer">
+        <button class="btn ghost" (click)="closeProductForm()">Cancel</button>
+        <button class="btn primary" (click)="saveProduct()" [disabled]="savingProduct">{{ savingProduct ? 'Saving...' : 'Save' }}</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PROMO POST MODAL -->
+<div class="modal-backdrop" *ngIf="showPostForm" (click)="closePostForm()"></div>
+<div class="modal" *ngIf="showPostForm">
+  <div class="modal-card" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3><fa-icon [icon]="faBullhorn"></fa-icon> {{ editingPostId ? 'Edit' : 'Create' }} Promotional Post</h3>
+      <button class="close-btn" (click)="closePostForm()"><fa-icon [icon]="faXmark"></fa-icon></button>
+    </div>
+    <div class="modal-body-form">
+      <div class="field"><label>Content *</label><textarea [(ngModel)]="postForm.content" rows="4" placeholder="Write your promotional content..."></textarea></div>
+      <div class="field"><label>Image URL</label><input type="text" [(ngModel)]="postForm.imageUrl" placeholder="https://..." /></div>
+      <div class="field"><label>CTA Type</label>
+        <select [(ngModel)]="postForm.ctaType">
+          <option>Learn More</option><option>Shop Now</option><option>Sign Up</option><option>Contact Us</option>
+        </select>
+      </div>
+      <div class="field"><label>CTA URL</label><input type="text" [(ngModel)]="postForm.ctaUrl" placeholder="https://..." /></div>
+      <p class="error-bar" *ngIf="postError">{{ postError }}</p>
+      <p class="success-bar" *ngIf="postSuccess">{{ postSuccess }}</p>
+      <div class="modal-footer">
+        <button class="btn ghost" (click)="closePostForm()">Cancel</button>
+        <button class="btn primary" (click)="savePromoPost()" [disabled]="savingPost">{{ savingPost ? 'Saving...' : 'Save' }}</button>
+      </div>
+    </div>
+  </div>
+</div>

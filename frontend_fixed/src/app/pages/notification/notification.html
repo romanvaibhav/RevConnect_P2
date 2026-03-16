@@ -1,0 +1,55 @@
+<section class="page">
+  <div class="topbar">
+    <div>
+      <h2 class="title">Notifications</h2>
+      <p class="subtitle" *ngIf="unreadCount > 0">
+        You have <b>{{ unreadCount }}</b> unread notification{{ unreadCount > 1 ? 's' : '' }}
+      </p>
+    </div>
+    <button class="btn primary" (click)="markAllAsRead()" [disabled]="unreadCount === 0">
+      <fa-icon [icon]="faCheck"></fa-icon> Mark All Read
+    </button>
+  </div>
+
+  <div class="content-area">
+    <div class="tabs">
+      <button class="tab" [class.active]="activeTab === 'all'" (click)="setTab('all')">
+        <fa-icon [icon]="faBell"></fa-icon> All
+      </button>
+      <button class="tab" [class.active]="activeTab === 'unread'" (click)="setTab('unread')">
+        Unread
+        <span class="badge" *ngIf="unreadCount > 0">{{ unreadCount }}</span>
+      </button>
+    </div>
+
+    <div class="error" *ngIf="errorMsg">{{ errorMsg }}</div>
+
+    <div class="list">
+      <div class="loading" *ngIf="loading">Loading...</div>
+      <div class="empty" *ngIf="!loading && filteredNotifications.length === 0">No notifications found.</div>
+
+      <div class="row" [class.unread-row]="!n.read" *ngFor="let n of filteredNotifications">
+        <div class="left">
+          <div class="icon-wrap">
+            <fa-icon [icon]="getTypeIcon(n.type)" class="type-icon"></fa-icon>
+          </div>
+          <div class="meta">
+            <div class="msg" [class.unread]="!n.read">{{ n.message }}</div>
+            <div class="sub">
+              <span class="type-pill">{{ getTypeLabel(n.type) }}</span>
+              <span class="dot">&bull;</span>
+              <span class="time">{{ n.createdAt | date:'medium' }}</span>
+            </div>
+          </div>
+        </div>
+        <div class="right">
+          <span class="blue-dot" *ngIf="!n.read"></span>
+          <button class="mark-btn" (click)="markAsRead(n)" [disabled]="n.read">
+            <fa-icon [icon]="faCheck" *ngIf="!n.read"></fa-icon>
+            {{ n.read ? 'Read' : 'Mark Read' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

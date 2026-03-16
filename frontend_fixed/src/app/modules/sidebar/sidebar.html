@@ -1,0 +1,40 @@
+<div class="sidebar-wrap">
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <span class="logo-icon">RC</span>
+      <span class="logo-text">RevConnect</span>
+    </div>
+
+    <nav class="sidebar-nav">
+      <a class="nav-item" routerLink="/home" routerLinkActive="nav-active">
+        <fa-icon [icon]="faHouse" class="nav-icon"></fa-icon>
+        <span class="nav-label">Home</span>
+      </a>
+      <a class="nav-item" routerLink="/feed" routerLinkActive="nav-active">
+        <fa-icon [icon]="faNewspaper" class="nav-icon"></fa-icon>
+        <span class="nav-label">Feed</span>
+      </a>
+      <a class="nav-item" routerLink="/profile" routerLinkActive="nav-active">
+        <fa-icon [icon]="faUser" class="nav-icon"></fa-icon>
+        <span class="nav-label">Profile</span>
+      </a>
+      <a class="nav-item" routerLink="/networks" routerLinkActive="nav-active">
+        <fa-icon [icon]="faGlobe" class="nav-icon"></fa-icon>
+        <span class="nav-label">Network</span>
+      </a>
+      <a class="nav-item" routerLink="/creatpost" routerLinkActive="nav-active">
+        <fa-icon [icon]="faPen" class="nav-icon"></fa-icon>
+        <span class="nav-label">Create Post</span>
+      </a>
+      <a class="nav-item" routerLink="/notification" routerLinkActive="nav-active">
+        <fa-icon [icon]="faBell" class="nav-icon"></fa-icon>
+        <span class="nav-label">Notifications</span>
+      </a>
+      <a class="nav-item nav-business" *ngIf="isBusinessUser" routerLink="/business" routerLinkActive="nav-active">
+        <fa-icon [icon]="faChartBar" class="nav-icon"></fa-icon>
+        <span class="nav-label">Dashboard</span>
+      </a>
+    </nav>
+  </aside>
+  <div class="handle"></div>
+</div>

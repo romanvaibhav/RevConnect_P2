@@ -1,0 +1,115 @@
+<div class="page">
+  <section class="posts-scroll">
+    <div class="header">
+      <h2>Posts</h2>
+      <button class="btn" (click)="fetchPosts()">
+        <fa-icon [icon]="faRotateRight"></fa-icon> Refresh
+      </button>
+    </div>
+
+    <div *ngIf="loadingPosts" class="muted">Loading posts...</div>
+    <div *ngIf="!loadingPosts && posts.length === 0" class="muted">No posts found.</div>
+
+    <article class="post-card" *ngFor="let post of posts">
+      <div class="post-top">
+        <div class="post-user">
+          <div class="avatar-sm"><fa-icon [icon]="faUser"></fa-icon></div>
+          {{ post.profileName || 'User' }}
+        </div>
+        <div class="post-date">{{ post.createdAt | date:'mediumDate' }}</div>
+      </div>
+      <div class="post-content">{{ post.content }}</div>
+      <div class="likeandcomment">
+        <span class="count">{{ post.likeCount ?? 0 }} Likes</span>
+        <span class="count">{{ post.commentCount ?? 0 }} Comments</span>
+      </div>
+      <hr />
+      <div class="post-actions">
+        <div class="like-actions">
+          <button class="action" [disabled]="likingPostIds.has(post.postId)" [class.liked-btn]="post.liked" (click)="onLike(post)">
+            <fa-icon [icon]="faThumbsUp"></fa-icon> Like
+          </button>
+          <button class="action" (click)="onUnlike(post)" [disabled]="likingPostIds.has(post.postId)">
+            <fa-icon [icon]="faThumbsDown"></fa-icon> Unlike
+          </button>
+        </div>
+        <button class="action"><fa-icon [icon]="faComment"></fa-icon> Comment</button>
+      </div>
+    </article>
+    <div class="bottom-space"></div>
+  </section>
+
+  <!-- PROFILE MODAL -->
+  <div class="modal-backdrop" *ngIf="profileModalOpen"></div>
+  <div class="modal" *ngIf="profileModalOpen">
+    <div class="modal-card">
+      <div class="modal-header">
+        <fa-icon [icon]="faUser" class="header-icon"></fa-icon>
+        <div>
+          <h2 class="modal-title">Welcome to RevConnect!</h2>
+          <p class="modal-subtitle">Let's set up your profile first.</p>
+        </div>
+      </div>
+      <div class="modal-body">
+        <div class="form-group"><label>Full Name <span class="required">*</span></label>
+          <input type="text" [(ngModel)]="profileForm.name" placeholder="Enter your name" /></div>
+        <div class="form-group"><label>Bio</label>
+          <textarea [(ngModel)]="profileForm.bio" placeholder="Tell something about yourself"></textarea></div>
+        <div class="liner">
+          <div class="form-group"><label>Profile Picture URL</label>
+            <input type="text" [(ngModel)]="profileForm.profilePicUrl" placeholder="https://..." /></div>
+          <div class="form-group"><label>Location</label>
+            <input type="text" [(ngModel)]="profileForm.location" placeholder="Your city" /></div>
+        </div>
+        <div class="liner">
+          <div class="form-group"><label>Website URL</label>
+            <input type="text" [(ngModel)]="profileForm.websiteUrl" placeholder="www.example.com" /></div>
+          <div class="form-group"><label>Privacy</label>
+            <select [(ngModel)]="profileForm.privacy">
+              <option value="PUBLIC">Public</option><option value="PRIVATE">Private</option>
+            </select></div>
+        </div>
+        <p class="form-error" *ngIf="profileError">{{ profileError }}</p>
+      </div>
+      <div class="modal-footer">
+        <button class="save-btn" (click)="saveProfile()" [disabled]="savingProfile">
+          {{ savingProfile ? 'Saving...' : (isBusinessUser ? 'Save & Continue' : 'Save Profile') }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- BUSINESS PROFILE MODAL -->
+  <div class="modal-backdrop" *ngIf="businessModalOpen"></div>
+  <div class="modal" *ngIf="businessModalOpen">
+    <div class="modal-card business-card">
+      <div class="modal-header biz-header">
+        <fa-icon [icon]="faBriefcase" class="header-icon"></fa-icon>
+        <div>
+          <div class="biz-badge">Business Account</div>
+          <h2 class="modal-title">Set Up Your Business Profile</h2>
+          <p class="modal-subtitle">You can update this anytime from the Dashboard.</p>
+        </div>
+      </div>
+      <div class="modal-body">
+        <div class="form-group"><label>Business Category <span class="required">*</span></label>
+          <input type="text" [(ngModel)]="businessForm.category" placeholder="e.g. Technology, Retail, Healthcare" /></div>
+        <div class="form-group"><label>Business Description</label>
+          <textarea [(ngModel)]="businessForm.detailedBio" rows="3" placeholder="What does your business do?"></textarea></div>
+        <div class="liner">
+          <div class="form-group"><label>Contact Email</label>
+            <input type="email" [(ngModel)]="businessForm.contactEmail" placeholder="contact@yourbusiness.com" /></div>
+          <div class="form-group"><label>Address</label>
+            <input type="text" [(ngModel)]="businessForm.address" placeholder="123 Main St, City" /></div>
+        </div>
+        <p class="form-error" *ngIf="businessError">{{ businessError }}</p>
+      </div>
+      <div class="modal-footer business-footer">
+        <button class="skip-btn" (click)="skipBusinessProfile()" [disabled]="savingBusiness">Skip for now</button>
+        <button class="save-btn" (click)="saveBusinessProfile()" [disabled]="savingBusiness">
+          {{ savingBusiness ? 'Saving...' : 'Save Business Profile' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

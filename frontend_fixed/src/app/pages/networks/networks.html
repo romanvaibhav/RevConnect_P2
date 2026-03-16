@@ -1,0 +1,180 @@
+<div class="page">
+  <div class="container">
+    <h2 class="title">Network</h2>
+    <p class="success-bar" *ngIf="successMsg">{{ successMsg }}</p>
+    <p class="error-bar" *ngIf="errorMsg">{{ errorMsg }}</p>
+
+    <div class="stats-row">
+      <div class="stat-card" (click)="openModal('connections')">
+        <fa-icon [icon]="faUserGroup" class="stat-icon"></fa-icon>
+        <p class="stat-num">{{ connections?.length || 0 }}</p>
+        <p class="stat-label">Connections</p>
+      </div>
+      <div class="stat-card" (click)="openModal('following')">
+        <fa-icon [icon]="faLink" class="stat-icon"></fa-icon>
+        <p class="stat-num">{{ followings?.length || 0 }}</p>
+        <p class="stat-label">Following</p>
+      </div>
+      <div class="stat-card" *ngIf="isBusinessUser()" (click)="openModal('followers')">
+        <fa-icon [icon]="faUserGroup" class="stat-icon"></fa-icon>
+        <p class="stat-num">{{ followers?.length || 0 }}</p>
+        <p class="stat-label">Followers</p>
+      </div>
+      <div class="stat-card warn" (click)="openModal('pending')">
+        <fa-icon [icon]="faUserPlus" class="stat-icon"></fa-icon>
+        <p class="stat-num">{{ pendingRequests?.length || 0 }}</p>
+        <p class="stat-label">Pending</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3 class="card-title">Find People</h3>
+      <div class="search-row">
+        <div class="search-wrap">
+          <fa-icon [icon]="faMagnifyingGlass" class="search-icon"></fa-icon>
+          <input class="search-input" type="text" placeholder="Search by name..."
+            [(ngModel)]="searchTerm" (keyup.enter)="onSearch()" />
+        </div>
+        <button class="btn primary" (click)="onSearch()" [disabled]="loading || !searchTerm.trim()">
+          {{ loading ? '...' : 'Search' }}
+        </button>
+        <button class="btn outline" *ngIf="searchResults.length" (click)="clearSearch()">
+          <fa-icon [icon]="faXmark"></fa-icon>
+        </button>
+      </div>
+
+      <div class="list" *ngIf="searchResults?.length">
+        <div class="item" *ngFor="let u of searchResults">
+          <div class="left">
+            <div class="avatar"><div class="avatar-fb">{{ initials(u.name) }}</div></div>
+            <div class="meta">
+              <p class="name">{{ u.name || 'User' }}</p>
+              <p class="sub" *ngIf="u.location"><fa-icon [icon]="faLocationDot"></fa-icon> {{ u.location }}</p>
+              <p class="sub" *ngIf="u.bio">{{ u.bio | slice:0:60 }}...</p>
+            </div>
+          </div>
+          <div class="right">
+            <button class="btn outline" (click)="viewProfile(u.userId)">View</button>
+            <button class="btn primary" (click)="connectTo(u.userId)" [disabled]="actionLoading">
+              <fa-icon [icon]="faUserPlus"></fa-icon> Connect
+            </button>
+          </div>
+        </div>
+      </div>
+      <p class="muted" *ngIf="!loading && searchResults.length === 0 && searchTerm.trim()">No users found.</p>
+      <p class="muted" *ngIf="!searchTerm.trim() && !searchResults.length">Search users to connect or follow.</p>
+    </div>
+  </div>
+
+  <!-- LIST MODAL -->
+  <div class="modal-backdrop" *ngIf="isModalOpen" (click)="closeModal()"></div>
+  <div class="modal" *ngIf="isModalOpen">
+    <div class="modal-card" (click)="$event.stopPropagation()">
+      <div class="modal-head">
+        <h3 class="modal-title">
+          {{ modalType==='connections' ? 'Connections' : modalType==='following' ? 'Following' : modalType==='followers' ? 'Followers' : 'Pending Requests' }}
+        </h3>
+        <button class="icon-btn" (click)="closeModal()"><fa-icon [icon]="faXmark"></fa-icon></button>
+      </div>
+      <div class="modal-body">
+        <!-- Connections -->
+        <div class="list" *ngIf="modalType==='connections'">
+          <p class="muted" *ngIf="!connections?.length">No connections yet.</p>
+          <div class="item" *ngFor="let c of connections">
+            <div class="left">
+              <div class="avatar"><div class="avatar-fb">{{ initials(getConnectionName(c)) }}</div></div>
+              <div class="meta">
+                <p class="name">{{ getConnectionName(c) }}</p>
+                <p class="sub">Connected {{ c.connectedAt | date:'shortDate' }}</p>
+              </div>
+            </div>
+            <div class="right">
+              <button class="btn danger" (click)="removeConnection(getConnectionId(c))" [disabled]="actionLoading">
+                <fa-icon [icon]="faUserMinus"></fa-icon> Remove
+              </button>
+            </div>
+          </div>
+        </div>
+        <!-- Following -->
+        <div class="list" *ngIf="modalType==='following'">
+          <p class="muted" *ngIf="!followings?.length">Not following anyone.</p>
+          <div class="item" *ngFor="let f of followings">
+            <div class="left">
+              <div class="avatar"><div class="avatar-fb">U</div></div>
+              <div class="meta"><p class="name">User #{{ f.followingId }}</p></div>
+            </div>
+            <div class="right">
+              <button class="btn danger" (click)="unfollow(f.followingId)" [disabled]="actionLoading">
+                <fa-icon [icon]="faUserMinus"></fa-icon> Unfollow
+              </button>
+            </div>
+          </div>
+        </div>
+        <!-- Followers -->
+        <div class="list" *ngIf="modalType==='followers'">
+          <p class="muted" *ngIf="!followers?.length">No followers yet.</p>
+          <div class="item" *ngFor="let fo of followers">
+            <div class="left">
+              <div class="avatar"><div class="avatar-fb">U</div></div>
+              <div class="meta"><p class="name">User #{{ fo.followerId }}</p></div>
+            </div>
+          </div>
+        </div>
+        <!-- Pending -->
+        <div class="list" *ngIf="modalType==='pending'">
+          <p class="muted" *ngIf="!pendingRequests?.length">No pending requests.</p>
+          <div class="item" *ngFor="let r of pendingRequests">
+            <div class="left">
+              <div class="avatar"><div class="avatar-fb">{{ initials(r.senderName||r.receiverName||'U') }}</div></div>
+              <div class="meta">
+                <p class="name">{{ r.senderName }} to {{ r.receiverName }}</p>
+                <p class="sub">{{ r.status }} · {{ r.createdAt | date:'shortDate' }}</p>
+              </div>
+            </div>
+            <div class="right gap" *ngIf="r.receiverId === currentUserId">
+              <button class="btn primary" (click)="acceptRequest(r.requestId)" [disabled]="actionLoading">
+                <fa-icon [icon]="faCheck"></fa-icon> Accept
+              </button>
+              <button class="btn outline" (click)="rejectRequest(r.requestId)" [disabled]="actionLoading">
+                <fa-icon [icon]="faXmark"></fa-icon> Reject
+              </button>
+            </div>
+            <span class="status-tag pending" *ngIf="r.senderId === currentUserId">Sent</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PROFILE VIEW MODAL -->
+  <div class="modal-backdrop" *ngIf="isProfileModalOpen" (click)="closeProfileModal()"></div>
+  <div class="modal" *ngIf="isProfileModalOpen">
+    <div class="modal-card" (click)="$event.stopPropagation()">
+      <div class="modal-head">
+        <h3 class="modal-title">Profile</h3>
+        <button class="icon-btn" (click)="closeProfileModal()"><fa-icon [icon]="faXmark"></fa-icon></button>
+      </div>
+      <div class="modal-body">
+        <p class="muted" *ngIf="profileLoading">Loading profile...</p>
+        <div *ngIf="!profileLoading && selectedProfile">
+          <div class="profile-row">
+            <div class="avatar avatar-lg"><div class="avatar-fb">{{ initials(selectedProfile.name) }}</div></div>
+            <div class="meta">
+              <p class="name">{{ selectedProfile.name }}</p>
+              <p class="sub" *ngIf="selectedProfile.location"><fa-icon [icon]="faLocationDot"></fa-icon> {{ selectedProfile.location }}</p>
+              <p class="sub" *ngIf="selectedProfile.bio">{{ selectedProfile.bio }}</p>
+            </div>
+          </div>
+          <div class="right gap" style="margin-top:16px">
+            <button class="btn primary" (click)="connectTo(selectedProfile.userId)" [disabled]="actionLoading">
+              <fa-icon [icon]="faUserPlus"></fa-icon> Connect
+            </button>
+            <button class="btn outline" *ngIf="selectedIsBusiness()" (click)="followUser(selectedProfile.userId)" [disabled]="actionLoading">
+              <fa-icon [icon]="faLink"></fa-icon> Follow
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

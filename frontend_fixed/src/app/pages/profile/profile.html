@@ -1,0 +1,158 @@
+<div class="page">
+  <div class="profile-card">
+    <div class="top">
+      <div class="avatar">
+        <img *ngIf="profile?.profilePicUrl; else defaultAvatar" [src]="profile?.profilePicUrl" alt="Profile" />
+        <ng-template #defaultAvatar>
+          <div class="avatar-fallback">{{ (profile?.name||'U')?.charAt(0).toUpperCase() }}</div>
+        </ng-template>
+      </div>
+      <div class="top-right">
+        <div class="name-row">
+          <div>
+            <h2 class="name">{{ profile?.name || 'Loading...' }}</h2>
+            <span class="privacy">{{ profile?.privacy || '' }}</span>
+          </div>
+          <button class="edit-btn" (click)="openEditModal()">
+            <fa-icon [icon]="faPenToSquare"></fa-icon> Edit
+          </button>
+        </div>
+        <p class="bio-inline" *ngIf="profile?.bio">{{ profile.bio }}</p>
+        <div class="meta-row">
+          <span *ngIf="profile?.location"><fa-icon [icon]="faLocationDot"></fa-icon> {{ profile.location }}</span>
+          <a *ngIf="profile?.websiteUrl" [href]="formatWebsite(profile.websiteUrl)" target="_blank" rel="noopener" class="link">
+            <fa-icon [icon]="faGlobe"></fa-icon> {{ profile.websiteUrl }}
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <div class="tabs">
+      <button class="tab" [class.active]="activeTab === 'posts'" (click)="setTab('posts')">My Posts ({{ posts.length }})</button>
+      <button class="tab" [class.active]="activeTab === 'saved'" (click)="setTab('saved')">
+        <fa-icon [icon]="faBookmark"></fa-icon> Saved
+      </button>
+      <button class="tab" [class.active]="activeTab === 'shared'" (click)="setTab('shared')">
+        <fa-icon [icon]="faShareNodes"></fa-icon> Shared
+      </button>
+    </div>
+
+    <div class="tab-content">
+      <!-- MY POSTS -->
+      <div *ngIf="activeTab === 'posts'">
+        <p class="muted" *ngIf="posts.length === 0">You haven't posted yet.</p>
+        <article class="post-card" *ngFor="let post of posts">
+          <div class="post-top">
+            <span class="post-user">{{ profile?.name || 'You' }}</span>
+            <span class="post-date">{{ post.createdAt | date:'mediumDate' }}</span>
+          </div>
+          <div class="post-content">{{ post.content }}</div>
+          <div class="stats-row">
+            <span><fa-icon [icon]="faThumbsUp"></fa-icon> {{ post.likeCount ?? 0 }}</span>
+            <span><fa-icon [icon]="faComment"></fa-icon> {{ post.commentCount ?? 0 }}</span>
+          </div>
+          <hr />
+          <div class="post-actions">
+            <button class="action" [class.liked-btn]="post.liked" [disabled]="likingPostIds.has(post.postId)" (click)="onLike(post)">
+              <fa-icon [icon]="faThumbsUp"></fa-icon> Like
+            </button>
+            <button class="action" [disabled]="likingPostIds.has(post.postId)" (click)="onUnlike(post)">
+              <fa-icon [icon]="faThumbsDown"></fa-icon> Unlike
+            </button>
+            <button class="action comment-btn" (click)="openComments(post)">
+              <fa-icon [icon]="faComment"></fa-icon> Comment
+            </button>
+          </div>
+        </article>
+        <div class="bottom-space"></div>
+      </div>
+
+      <!-- SAVED POSTS -->
+      <div *ngIf="activeTab === 'saved'">
+        <p class="muted" *ngIf="loadingSaved">Loading saved posts...</p>
+        <p class="muted" *ngIf="!loadingSaved && savedPosts.length === 0">No saved posts. Save posts from the Feed page.</p>
+        <article class="post-card" *ngFor="let post of savedPosts">
+          <div class="post-top">
+            <span class="post-user">{{ post.profileName || 'User' }}</span>
+            <span class="post-date">{{ post.createdAt | date:'mediumDate' }}</span>
+          </div>
+          <div class="post-content">{{ post.content }}</div>
+        </article>
+      </div>
+
+      <!-- SHARED POSTS -->
+      <div *ngIf="activeTab === 'shared'">
+        <p class="muted" *ngIf="loadingShared">Loading shared posts...</p>
+        <p class="muted" *ngIf="!loadingShared && sharedPosts.length === 0">You haven't shared any posts yet.</p>
+        <article class="post-card" *ngFor="let share of sharedPosts">
+          <div class="post-top">
+            <span class="post-user">{{ share.sharedByUsername || 'You' }}</span>
+            <span class="post-date">{{ share.sharedAt | date:'mediumDate' }}</span>
+          </div>
+          <div class="shared-label"><fa-icon [icon]="faReply"></fa-icon> Shared post</div>
+          <div class="post-content">{{ share.originalPostContent }}</div>
+          <div class="post-content share-note" *ngIf="share.commentaryText">
+            <strong>Your note:</strong> {{ share.commentaryText }}
+          </div>
+        </article>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- EDIT MODAL -->
+<div class="modal-backdrop" *ngIf="isEditOpen" (click)="closeEditModal()">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3><fa-icon [icon]="faPenToSquare"></fa-icon> Edit Profile</h3>
+      <button class="icon-btn" (click)="closeEditModal()"><fa-icon [icon]="faXmark"></fa-icon></button>
+    </div>
+    <form class="form" (ngSubmit)="saveProfile()" #f="ngForm">
+      <div class="field"><label>Name</label><input type="text" name="name" [(ngModel)]="editForm.name" required /></div>
+      <div class="field"><label>Bio</label><textarea name="bio" rows="3" [(ngModel)]="editForm.bio"></textarea></div>
+      <div class="field"><label>Location</label><input type="text" name="location" [(ngModel)]="editForm.location" /></div>
+      <div class="field"><label>Website URL</label><input type="text" name="websiteUrl" [(ngModel)]="editForm.websiteUrl" /></div>
+      <div class="field"><label>Profile Pic URL</label><input type="text" name="profilePicUrl" [(ngModel)]="editForm.profilePicUrl" /></div>
+      <div class="field"><label>Privacy</label>
+        <select name="privacy" [(ngModel)]="editForm.privacy">
+          <option value="public">Public</option><option value="private">Private</option>
+        </select>
+      </div>
+      <div class="actions">
+        <button type="button" class="btn ghost" (click)="closeEditModal()">Cancel</button>
+        <button type="submit" class="btn primary" [disabled]="isSaving || !f.valid">{{ isSaving ? 'Saving...' : 'Save' }}</button>
+      </div>
+      <p class="error" *ngIf="errorMsg">{{ errorMsg }}</p>
+      <p class="success" *ngIf="successMsg">{{ successMsg }}</p>
+    </form>
+  </div>
+</div>
+
+<!-- COMMENT MODAL -->
+<div class="comment-backdrop" *ngIf="commentModalOpen" (click)="closeComments()">
+  <div class="comment-modal" (click)="$event.stopPropagation()">
+    <div class="comment-modal-header">
+      <h3 class="modal-title"><fa-icon [icon]="faComment"></fa-icon> Comments</h3>
+      <button class="close-btn" (click)="closeComments()"><fa-icon [icon]="faXmark"></fa-icon></button>
+    </div>
+    <div class="add-comment">
+      <textarea class="comment-input" [(ngModel)]="newCommentText" placeholder="Write a comment..."></textarea>
+      <button class="cta-btn" (click)="addComment()" [disabled]="postingComment || !newCommentText.trim()">
+        {{ postingComment ? 'Posting...' : 'Post Comment' }}
+      </button>
+      <p class="error" *ngIf="commentError">{{ commentError }}</p>
+    </div>
+    <hr class="modal-divider" />
+    <div class="comments-list">
+      <div *ngIf="loadingComments" class="empty-state">Loading comments...</div>
+      <div *ngIf="!loadingComments && comments.length === 0" class="empty-state">No comments yet.</div>
+      <div class="comment-card" *ngFor="let comment of comments">
+        <div class="comment-top">
+          <span class="comment-user">{{ comment.username || comment.profileName || 'User' }}</span>
+          <span class="comment-date">{{ comment.createdAt | date:'mediumDate' }}</span>
+        </div>
+        <div class="comment-text">{{ comment.content }}</div>
+      </div>
+    </div>
+  </div>
+</div>

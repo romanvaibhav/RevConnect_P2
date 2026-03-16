@@ -1,9 +1,9 @@
 package com.revconnect.RevConnectWeb.services;
 
-import com.revconnect.RevConnectWeb.DTO.PostAnalyticsDTO;
+import com.revconnect.RevConnectWeb.DTO.PromotionalPostDTO;
 import com.revconnect.RevConnectWeb.entity.BusinessProfile;
-import com.revconnect.RevConnectWeb.entity.Product;
 import com.revconnect.RevConnectWeb.entity.PromotionalPost;
+import com.revconnect.RevConnectWeb.entity.User;
 import com.revconnect.RevConnectWeb.repository.BusinessProfileRepository;
 import com.revconnect.RevConnectWeb.repository.PostLikesRepository;
 import com.revconnect.RevConnectWeb.repository.ProductRepository;
@@ -29,27 +29,30 @@ public class PromotionalPostService {
     @Autowired
     private PostLikesRepository postLikesRepository;
 
-    // Create a new Promotional Post
-    public PromotionalPost createPost(Long businessProfileId, String content, String imageUrl, List<Long> productIds,String ctaType,String ctaUrl) {
+
+    //Create Post
+    public PromotionalPostDTO createPost(Long businessProfileId, String content, String imageUrl, String ctaType, String ctaUrl) {
         BusinessProfile businessProfile = businessProfileRepository.findById(businessProfileId)
                 .orElseThrow(() -> new RuntimeException("BusinessProfile not found"));
 
-        List<Product> taggedProducts = productRepository.findAllById(productIds);
+        User user = businessProfile.getUser(); // make sure BusinessProfile has getUser()
+
         PromotionalPost post = new PromotionalPost(
-                content,                // content
-                imageUrl,               // imageUrl
-                LocalDateTime.now(),    // createdAt
-                false,                  // pinned status
-                businessProfile,        // businessProfile
-                taggedProducts,        // taggedProducts
+                user,
+                content,
+                imageUrl,
+                LocalDateTime.now(),
+                false,
                 ctaType,
                 ctaUrl
         );
 
-        return postRepository.save(post);
+        PromotionalPost savedPost = postRepository.save(post);
+
+        return mapToDTO(savedPost);
     }
 
-    // Pin a post
+    //pin
     public PromotionalPost pinPost(Long postId) {
         PromotionalPost post = postRepository.findById(postId)
                 .orElseThrow(() -> new RuntimeException("Post not found"));
@@ -57,13 +60,14 @@ public class PromotionalPostService {
         post.setPinned(true);
         return postRepository.save(post);
     }
-    // Retrieve all PromotionalPosts
+
+    //all posts
     public List<PromotionalPost> getAllPosts() {
-        // Return all posts from the database
         return postRepository.findAll();
     }
 
-    // Unpin a post
+
+    //unpin
     public PromotionalPost unpinPost(Long postId) {
         PromotionalPost post = postRepository.findById(postId)
                 .orElseThrow(() -> new RuntimeException("Post not found"));
@@ -72,12 +76,17 @@ public class PromotionalPostService {
         return postRepository.save(post);
     }
 
-//    public PostAnalyticsDTO getPostAnalytics(Long postId) {
-//        Long likeCount = postLikeRepository.countByPostId(postId);
-//        Long commentCount = postCommentRepository.countByPostId(postId);
-//        Long shareCount = postShareRepository.countByPostId(postId);
-//        Long uniqueViewerCount = postViewRepository.countDistinctByPostId(postId);
-//
-//        return new PostAnalyticsDTO(likeCount, commentCount, shareCount, uniqueViewerCount);
-//    }
+
+    private PromotionalPostDTO mapToDTO(PromotionalPost post) {
+        return new PromotionalPostDTO(
+                post.getId(),
+                post.getContent(),
+                post.getImageUrl(),
+                post.getCreatedAt(),
+                post.isPinned(),
+                post.getCtaType(),
+                post.getCtaUrl(),
+                post.getUser() != null ? post.getUser().getUsername() : null
+        );
+    }
 }

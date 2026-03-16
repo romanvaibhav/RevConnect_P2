@@ -1,0 +1,24 @@
+/* The navbar is fixed at 56px, so push content below it */
+.layout {
+  display: flex;
+  margin-top: 56px;
+  height: calc(100vh - 56px);
+  overflow: hidden;
+}
+
+/* The sidebar sits inside layout, already fixed-positioned itself */
+.content {
+  flex: 1;
+  margin-left: 40px;        /* matches the exposed handle width of sidebar */
+  height: calc(100vh - 56px);
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #d1d5db transparent;
+}
+
+.content::-webkit-scrollbar { width: 5px; }
+.content::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 99px; }
+
+@media (max-width: 640px) {
+  .content { margin-left: 0; }
+}

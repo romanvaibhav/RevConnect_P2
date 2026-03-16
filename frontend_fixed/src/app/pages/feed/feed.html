@@ -1,0 +1,150 @@
+<section class="page">
+  <div class="topbar">
+    <h2 class="heading">Feed</h2>
+    <div class="top-actions">
+      <div class="search-wrap">
+        <fa-icon [icon]="faHashtag" class="hash-icon"></fa-icon>
+        <input class="search" type="text" placeholder="Search by hashtag (e.g. java, aws)"
+          [(ngModel)]="hashtagQuery" (input)="applyHashtagFilter()" />
+        <button class="icon-clear" *ngIf="hashtagQuery.trim()" (click)="clearHashtagSearch()">
+          <fa-icon [icon]="faXmark"></fa-icon>
+        </button>
+      </div>
+      <button class="refresh-btn" (click)="loadFeed()" [disabled]="loading">
+        <fa-icon [icon]="faRotateRight"></fa-icon>
+        {{ loading ? 'Loading...' : 'Refresh' }}
+      </button>
+    </div>
+  </div>
+
+  <div class="container">
+    <p class="error-bar" *ngIf="errorMsg">{{ errorMsg }}</p>
+    <p class="muted" *ngIf="!loading && filteredPosts.length === 0">No posts found.</p>
+
+    <article class="post-card" *ngFor="let post of filteredPosts">
+      <div class="post-top">
+        <div class="post-user">
+          <div class="avatar-sm">{{ (post.profileName || 'U').charAt(0).toUpperCase() }}</div>
+          <span>{{ post.profileName || 'User' }}</span>
+          <span class="badge promoted" *ngIf="post.isPromoted">Promoted</span>
+          <span class="badge pinned" *ngIf="post.isPromoted && post.isPinned">
+            <fa-icon [icon]="faThumbTack"></fa-icon> Pinned
+          </span>
+        </div>
+        <div class="post-date">{{ post.createdAt | date:'mediumDate' }}</div>
+      </div>
+
+      <div class="promo-image" *ngIf="post.isPromoted && post.imageUrl">
+        <img [src]="post.imageUrl" alt="promo" />
+      </div>
+
+      <div class="post-content">{{ post.content }}</div>
+
+      <div class="cta-row" *ngIf="post.isPromoted && post.ctaUrl">
+        <button class="cta-btn" (click)="openCta(post.ctaUrl)">{{ post.ctaType || 'Learn More' }}</button>
+      </div>
+
+      <div class="stats-row">
+        <span class="stat"><fa-icon [icon]="faThumbsUp"></fa-icon> {{ post.likeCount ?? 0 }} Likes</span>
+        <span class="stat"><fa-icon [icon]="faComment"></fa-icon> {{ post.commentCount ?? 0 }} Comments</span>
+      </div>
+
+      <hr class="divider" />
+
+      <div class="post-actions">
+        <button class="action-btn" [class.active-like]="post.liked"
+          [disabled]="likingPostIds.has(post.postId) || post.isPromoted"
+          (click)="onLike(post)">
+          <fa-icon [icon]="faThumbsUp"></fa-icon>
+          <span>{{ post.liked ? 'Liked' : 'Like' }}</span>
+        </button>
+
+        <button class="action-btn"
+          [disabled]="likingPostIds.has(post.postId) || post.isPromoted"
+          (click)="onUnlike(post)">
+          <fa-icon [icon]="faThumbsDown"></fa-icon>
+          <span>Unlike</span>
+        </button>
+
+        <button class="action-btn" (click)="openComments(post)">
+          <fa-icon [icon]="faComment"></fa-icon>
+          <span>Comment</span>
+        </button>
+
+        <button class="action-btn" [disabled]="post.isPromoted" (click)="openShareModal(post)">
+          <fa-icon [icon]="faShareNodes"></fa-icon>
+          <span>Share</span>
+        </button>
+
+        <button class="action-btn" [class.active-save]="post.saved" [disabled]="post.isPromoted"
+          (click)="onSave(post)">
+          <fa-icon [icon]="faBookmark"></fa-icon>
+          <span>{{ post.saved ? 'Saved' : 'Save' }}</span>
+        </button>
+      </div>
+    </article>
+
+    <div style="height:32px"></div>
+  </div>
+
+  <!-- COMMENT MODAL -->
+  <div class="modal-backdrop" *ngIf="commentModalOpen" (click)="closeComments()"></div>
+  <div class="modal" *ngIf="commentModalOpen">
+    <div class="modal-card" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <div>
+          <h3 class="modal-title">Comments</h3>
+          <p class="modal-sub" *ngIf="activePost">{{ activePost.profileName }} &bull; {{ activePost.createdAt | date:'mediumDate' }}</p>
+        </div>
+        <button class="close-btn" (click)="closeComments()"><fa-icon [icon]="faXmark"></fa-icon></button>
+      </div>
+      <div class="add-comment">
+        <textarea class="comment-input" [(ngModel)]="newCommentText" placeholder="Write a comment..."></textarea>
+        <button class="submit-btn" (click)="addComment()" [disabled]="postingComment || !newCommentText.trim()">
+          {{ postingComment ? 'Posting...' : 'Post Comment' }}
+        </button>
+        <p class="error-bar" *ngIf="commentError">{{ commentError }}</p>
+      </div>
+      <hr class="divider" />
+      <div class="comment-list">
+        <p class="muted" *ngIf="loadingComments">Loading comments...</p>
+        <p class="muted" *ngIf="!loadingComments && comments.length === 0">No comments yet.</p>
+        <div class="comment-item" *ngFor="let c of comments">
+          <div class="comment-top">
+            <span class="comment-user">{{ c.username || c.profileName || 'User' }}</span>
+            <div class="comment-right">
+              <span class="comment-date">{{ c.createdAt | date:'mediumDate' }}</span>
+              <button class="delete-comment-btn" *ngIf="isMyComment(c)"
+                (click)="onDeleteComment(c)" [disabled]="deletingCommentIds.has(c.commentId || c.id)">
+                <fa-icon [icon]="faTrash"></fa-icon>
+              </button>
+            </div>
+          </div>
+          <div class="comment-text">{{ c.content }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SHARE MODAL -->
+  <div class="modal-backdrop" *ngIf="shareModalOpen" (click)="closeShareModal()"></div>
+  <div class="modal" *ngIf="shareModalOpen">
+    <div class="modal-card" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3 class="modal-title"><fa-icon [icon]="faShareNodes"></fa-icon> Share Post</h3>
+        <button class="close-btn" (click)="closeShareModal()"><fa-icon [icon]="faXmark"></fa-icon></button>
+      </div>
+      <div class="share-preview" *ngIf="sharePost">
+        <p class="share-preview-text">{{ sharePost.content }}</p>
+      </div>
+      <div class="add-comment">
+        <textarea class="comment-input" [(ngModel)]="shareText" placeholder="Add a comment (optional)..."></textarea>
+        <button class="submit-btn" (click)="submitShare()" [disabled]="sharing">
+          {{ sharing ? 'Sharing...' : 'Share Now' }}
+        </button>
+        <p class="error-bar" *ngIf="shareError">{{ shareError }}</p>
+        <p class="success-bar" *ngIf="shareSuccess"><fa-icon [icon]="faShareNodes"></fa-icon> {{ shareSuccess }}</p>
+      </div>
+    </div>
+  </div>
+</section>

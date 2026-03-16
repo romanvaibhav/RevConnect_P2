@@ -1,6 +1,6 @@
 package com.revconnect.RevConnectWeb.controllers;
 
-import com.revconnect.RevConnectWeb.DTO.PostAnalyticsDTO;
+import com.revconnect.RevConnectWeb.DTO.PromotionalPostDTO;
 import com.revconnect.RevConnectWeb.entity.PromotionalPost;
 import com.revconnect.RevConnectWeb.services.PromotionalPostService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,46 +17,45 @@ public class PromotionalPostController {
     @Autowired
     private PromotionalPostService postService;
 
-    // Create a new promotional post
     @PostMapping
-    public ResponseEntity<PromotionalPost> createPost(
+    public ResponseEntity<PromotionalPostDTO> createPost(
             @RequestParam Long businessProfileId,
             @RequestParam String content,
-            @RequestParam String imageUrl,
-            @RequestParam List<Long> productIds,
-            @RequestParam String ctaType,  // "Learn More", "Shop Now", etc.
+            @RequestParam(required = false, defaultValue = "") String imageUrl,
+            @RequestParam(required = false) List<Long> productIds,
+            @RequestParam String ctaType,
             @RequestParam String ctaUrl) {
 
-        PromotionalPost post = postService.createPost(businessProfileId, content, imageUrl, productIds,ctaType,ctaUrl);
-        return new ResponseEntity<>(post, HttpStatus.CREATED);
+        if (productIds == null) {
+            productIds = List.of();
+        }
+
+        PromotionalPostDTO postDTO = postService.createPost(
+                businessProfileId,
+                content,
+                imageUrl,
+                ctaType,
+                ctaUrl
+        );
+
+        return new ResponseEntity<>(postDTO, HttpStatus.CREATED);
     }
 
-
-    //Fetching promotinal posts
     @GetMapping
     public ResponseEntity<List<PromotionalPost>> getAllPosts() {
         List<PromotionalPost> posts = postService.getAllPosts();
         return new ResponseEntity<>(posts, HttpStatus.OK);
     }
 
-    // Pin a post
     @PutMapping("/{id}/pin")
     public ResponseEntity<PromotionalPost> pinPost(@PathVariable Long id) {
         PromotionalPost post = postService.pinPost(id);
         return new ResponseEntity<>(post, HttpStatus.OK);
     }
 
-    // Unpin a post
     @PutMapping("/{id}/unpin")
     public ResponseEntity<PromotionalPost> unpinPost(@PathVariable Long id) {
         PromotionalPost post = postService.unpinPost(id);
         return new ResponseEntity<>(post, HttpStatus.OK);
     }
-
-    //Promotional Post Analytics
-//    @GetMapping("/{postId}/analytics")
-//    public ResponseEntity<PostAnalyticsDTO> getPostAnalytics(@PathVariable Long postId) {
-//        PostAnalyticsDTO analytics = postService.getPostAnalytics(postId);
-//        return new ResponseEntity<>(analytics, HttpStatus.OK);
-//    }
 }

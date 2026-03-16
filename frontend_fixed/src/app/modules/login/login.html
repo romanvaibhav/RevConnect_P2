@@ -1,0 +1,54 @@
+<div class="login-container">
+  <div class="login-card">
+    <form [formGroup]="loginForm" autocomplete="off">
+      <p class="login-title">Sign in to your account</p>
+
+      <!-- Email Input -->
+      <div class="form-group">
+        <input type="email" placeholder="Enter email" formControlName="email" class="input-field" />
+
+        <div class="error-message">
+          <small *ngIf="loginForm.controls['email'].invalid && loginForm.controls['email'].touched">
+            <span *ngIf="loginForm.controls['email'].errors?.['required']">
+              Email is required!
+            </span>
+            <span *ngIf="loginForm.controls['email'].errors?.['invalid']">
+              Please enter a valid email address!
+            </span>
+          </small>
+        </div>
+      </div>
+
+      <!-- Password Input -->
+      <div class="form-group">
+        <input
+          type="password"
+          placeholder="Enter password"
+          formControlName="password"
+          class="input-field"
+        />
+
+        <div class="error-message">
+          <small
+            *ngIf="loginForm.controls['password'].invalid && loginForm.controls['password'].touched"
+          >
+            <span *ngIf="loginForm.controls['password'].errors?.['required']">
+              Password is required!
+            </span>
+            <span *ngIf="loginForm.controls['password'].errors?.['invalid']">
+              Enter a valid password!
+            </span>
+          </small>
+        </div>
+      </div>
+
+      <!-- Sign In Button -->
+      <button type="button" class="login-button" (click)="loginBtn()">Sign In</button>
+
+      <p class="signup-text">
+        No account?
+        <a routerLink="/regi" class="signup-link">Sign up</a>
+      </p>
+    </form>
+  </div>
+</div>

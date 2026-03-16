@@ -1,0 +1,87 @@
+<div class="container">
+  <div class="card">
+    <h2 class="title">Sign up now</h2>
+
+    <form [formGroup]="regiForm" class="form">
+      <input formControlName="email" type="email" placeholder="Enter Email" class="input" />
+
+      <div
+        *ngIf="regiForm.controls['email'].invalid && regiForm.controls['email'].touched"
+        class="error"
+      >
+        <small *ngIf="regiForm.controls['email'].errors?.['required']"> Email is required </small>
+        <small *ngIf="regiForm.controls['email'].errors?.['email']"> Invalid Email </small>
+      </div>
+
+      <input
+        formControlName="username"
+        type="username"
+        placeholder="Enter username"
+        class="input"
+      />
+
+      <div
+        *ngIf="regiForm.controls['username'].invalid && regiForm.controls['username'].touched"
+        class="error"
+      >
+        <small *ngIf="regiForm.controls['username'].errors?.['required']">
+          username is required
+        </small>
+        <small *ngIf="regiForm.controls['username'].errors?.['username']"> Invalid username </small>
+      </div>
+
+      <!-- Account Type -->
+      <div class="radio-group">
+        <label class="radio-label">Select Account Type</label>
+
+        <div class="radio-options">
+          <label>
+            <input type="radio" formControlName="accountType" value="PERSONAL" />
+            Personal
+          </label>
+
+          <label>
+            <input type="radio" formControlName="accountType" value="BUSINESS" />
+            Business
+          </label>
+        </div>
+        <div
+          *ngIf="
+            regiForm.controls['accountType'].invalid && regiForm.controls['accountType'].touched
+          "
+          class="error"
+        >
+          <small>Account type is required</small>
+        </div>
+      </div>
+
+      <input
+        formControlName="password"
+        type="password"
+        placeholder="Choose A Password"
+        class="input"
+      />
+
+      <div
+        *ngIf="regiForm.controls['password'].invalid && regiForm.controls['password'].touched"
+        class="error"
+      >
+        <small *ngIf="regiForm.controls['password'].errors?.['required']">
+          Password is required
+        </small>
+        <small *ngIf="regiForm.controls['password'].errors?.['minlength']">
+          Password should be at least 8 characters
+        </small>
+      </div>
+
+      <button type="button" [disabled]="regiForm.invalid" (click)="adminRegistration()" class="btn">
+        Sign up
+      </button>
+
+      <span class="login-text">
+        Already a member?
+        <a routerLink="/" class="link">Login Here</a>
+      </span>
+    </form>
+  </div>
+</div>

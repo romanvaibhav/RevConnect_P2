@@ -1,0 +1,45 @@
+services:
+  db:
+    image: mysql:8.0
+    container_name: revconnect_db
+    restart: always
+    environment:
+      MYSQL_DATABASE: revweb
+      MYSQL_USER: revweb
+      MYSQL_PASSWORD: revweb
+      MYSQL_ROOT_PASSWORD: Roman@123
+    volumes:
+      - mysqldata:/var/lib/mysql
+    ports:
+      - "3306:3306"
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build: ./RevConnectWeb2
+    container_name: revconnect_backend
+    restart: on-failure
+    environment:
+      SPRING_DATASOURCE_URL: "jdbc:mysql://db:3306/revweb?useSSL=false&allowPublicKeyRetrieval=true"
+      SPRING_DATASOURCE_USERNAME: revweb
+      SPRING_DATASOURCE_PASSWORD: revweb
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
+
+  frontend:
+    build: ./frontend_fixed
+    container_name: revconnect_frontend
+    restart: always
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+
+volumes:
+  mysqldata:

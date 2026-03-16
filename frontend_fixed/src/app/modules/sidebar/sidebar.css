@@ -1,0 +1,120 @@
+.sidebar-wrap {
+  position: fixed;
+  top: 56px;           /* sit below the fixed navbar */
+  left: 0;
+  height: calc(100vh - 56px);
+  z-index: 200;
+  display: flex;
+  align-items: stretch;
+}
+
+.sidebar {
+  height: 100%;
+  width: 220px;
+  background: #fff;
+  color: #1f2937;
+  border-right: 1px solid #e5e7eb;
+  box-shadow: 2px 0 12px rgba(0,0,0,0.07);
+  transform: translateX(-180px);   /* hide all but handle */
+  transition: transform 260ms cubic-bezier(0.4,0,0.2,1);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.sidebar-wrap:hover .sidebar {
+  transform: translateX(0);
+}
+
+/* Logo row */
+.sidebar-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 16px 14px;
+  border-bottom: 1px solid #f3f4f6;
+  flex-shrink: 0;
+}
+
+.logo-icon {
+  width: 34px;
+  height: 34px;
+  background: #4f46e5;
+  color: #fff;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  font-weight: 900;
+  font-size: 13px;
+  flex-shrink: 0;
+}
+
+.logo-text {
+  font-weight: 800;
+  font-size: 16px;
+  color: #111827;
+  white-space: nowrap;
+}
+
+/* Nav */
+.sidebar-nav {
+  padding: 12px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+  overflow-y: auto;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  text-decoration: none;
+  color: #374151;
+  font-weight: 600;
+  font-size: 14px;
+  transition: background 150ms, color 150ms;
+  white-space: nowrap;
+}
+
+.nav-item:hover {
+  background: #f3f4f6;
+  color: #111827;
+}
+
+.nav-active {
+  background: #ede9fe;
+  color: #4f46e5;
+}
+
+.nav-icon {
+  width: 18px;
+  text-align: center;
+  flex-shrink: 0;
+  font-size: 15px;
+}
+
+.nav-label { font-weight: 700; }
+
+.nav-business {
+  margin-top: 8px;
+  padding-top: 12px;
+  border-top: 1px solid #f3f4f6;
+}
+
+/* Visible handle strip */
+.handle {
+  width: 6px;
+  background: #d1d5db;
+  border-radius: 0 8px 8px 0;
+  align-self: stretch;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.sidebar-wrap:hover .handle {
+  background: #a5b4fc;
+}

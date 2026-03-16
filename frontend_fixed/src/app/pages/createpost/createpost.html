@@ -1,0 +1,67 @@
+<div class="page">
+  <div class="topbar">
+    <h2 class="title">
+      <fa-icon [icon]="faPen"></fa-icon> Create Post
+    </h2>
+    <button class="btn outline" (click)="clear()" [disabled]="isPosting">
+      <fa-icon [icon]="faEraser"></fa-icon> Clear
+    </button>
+  </div>
+
+  <div class="content-area">
+    <section class="card">
+      <div class="type-row">
+        <button type="button" class="pill" [class.active]="postType === 'normal'" (click)="postType = 'normal'" [disabled]="isPosting">
+          <fa-icon [icon]="faPen"></fa-icon> Normal
+        </button>
+        <button *ngIf="isBusinessUser" type="button" class="pill" [class.active]="postType === 'promo'" (click)="postType = 'promo'" [disabled]="isPosting">
+          <fa-icon [icon]="faBullhorn"></fa-icon> Promotional
+        </button>
+      </div>
+
+      <textarea class="textarea" [(ngModel)]="postText" [maxlength]="maxLen"
+        [placeholder]="postType === 'promo' ? 'Write your promotional content...' : 'What\'s on your mind?'">
+      </textarea>
+
+      <div class="char-row">
+        <span class="counter" [class.danger]="remainingChars <= 30">{{ remainingChars }} characters left</span>
+      </div>
+
+      <div class="promo-fields" *ngIf="postType === 'promo'">
+        <h4 class="promo-title"><fa-icon [icon]="faBullhorn"></fa-icon> Promotional Details</h4>
+        <div class="form-row">
+          <div class="field">
+            <label>Image URL</label>
+            <input class="input" type="text" [(ngModel)]="imageUrl" placeholder="https://..." />
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="field">
+            <label>Call to Action</label>
+            <select class="input" [(ngModel)]="ctaType">
+              <option value="Learn More">Learn More</option>
+              <option value="Shop Now">Shop Now</option>
+              <option value="Sign Up">Sign Up</option>
+              <option value="Contact Us">Contact Us</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>CTA URL <span class="req">*</span></label>
+            <input class="input" type="text" [(ngModel)]="ctaUrl" placeholder="https://..." />
+          </div>
+        </div>
+      </div>
+
+      <div class="footer-row">
+        <div>
+          <p class="msg success" *ngIf="successMsg"><fa-icon [icon]="faPaperPlane"></fa-icon> {{ successMsg }}</p>
+          <p class="msg error" *ngIf="errorMsg">{{ errorMsg }}</p>
+        </div>
+        <button class="post-btn" (click)="onCreatePost()" [disabled]="!canPost()">
+          <fa-icon [icon]="faPaperPlane"></fa-icon>
+          {{ isPosting ? 'Posting...' : 'Post' }}
+        </button>
+      </div>
+    </section>
+  </div>
+</div>
